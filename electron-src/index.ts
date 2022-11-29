@@ -6,7 +6,7 @@ import { BrowserWindow, app, ipcMain, IpcMainEvent } from "electron";
 import isDev from "electron-is-dev";
 import prepareNext from "electron-next";
 
-import {RunProps, runCommand, UpdateProps, updateEnvironment} from './pyer'
+import {RunProps, pyRun, UpdateProps, updateEnvironment} from './pyer'
 
 function createWindow() {
   // Create the browser window.
@@ -61,12 +61,12 @@ ipcMain.on("message", (event: IpcMainEvent, message: any) => {
 });
 
 // message: likes "easyocr,PyAutoGUI==0.9.53"
-ipcMain.on("update", (_event: IpcMainEvent, props: UpdateProps) => {
+ipcMain.on("update", (event: IpcMainEvent, props: UpdateProps) => {
   console.log("-> update:", props);
-  updateEnvironment(props);
+  updateEnvironment(event, props);
 });
 
-ipcMain.on("run", (_event: IpcMainEvent, props: RunProps) => {
+ipcMain.on("run", (event: IpcMainEvent, props: RunProps) => {
   console.log("-> run:", props);
-  runCommand(props);
+  pyRun(event, props);
 })
