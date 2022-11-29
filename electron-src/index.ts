@@ -6,6 +6,8 @@ import { BrowserWindow, app, ipcMain, IpcMainEvent } from "electron";
 import isDev from "electron-is-dev";
 import prepareNext from "electron-next";
 
+import {RunProps, runCommand, UpdateProps, updateEnvironment} from './pyer'
+
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -18,19 +20,21 @@ function createWindow() {
     width: isDev ? 1440 : 800,
   });
 
-  // and load the index.html of the app.
-  const url = isDev ? "http://localhost:18123/" : "https://epic7.joyqoo.com";
-  mainWindow.loadURL(url);
-
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  if (isDev) {
+    mainWindow.loadURL("http://localhost:18123/");
+    mainWindow.webContents.openDevTools();
+  } else {
+    mainWindow.loadURL("https://epic7.joyqoo.com");
+  }
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
-  await prepareNext("./renderer");
+  if (isDev) {
+    await prepareNext("./renderer");
+  }
 
   createWindow();
 
@@ -55,3 +59,14 @@ ipcMain.on("message", (event: IpcMainEvent, message: any) => {
   console.log(message);
   setTimeout(() => event.sender.send("message", "hi from electron"), 500);
 });
+
+// message: likes "easyocr,PyAutoGUI==0.9.53"
+ipcMain.on("update", (_event: IpcMainEvent, props: UpdateProps) => {
+  console.log("-> update:", props);
+  updateEnvironment(props);
+});
+
+ipcMain.on("run", (_event: IpcMainEvent, props: RunProps) => {
+  console.log("-> run:", props);
+  runCommand(props);
+})
