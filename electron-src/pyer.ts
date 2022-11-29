@@ -3,7 +3,7 @@ import fs from "fs";
 import { spawn, ChildProcess } from "child_process";
 import { app, IpcMainEvent } from "electron";
 import { Options, PythonShell } from "python-shell";
-import { URL } from "node:url";
+import { URL } from "url";
 import * as http from "http";
 import * as https from "https";
 

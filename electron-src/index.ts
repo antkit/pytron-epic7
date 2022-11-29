@@ -21,7 +21,7 @@ function createWindow() {
   });
 
   if (isDev) {
-    mainWindow.loadURL("http://localhost:18123/");
+    mainWindow.loadURL("http://localhost:18123/test");
     mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadURL("https://epic7.joyqoo.com");
