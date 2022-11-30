@@ -112,6 +112,11 @@ function download(url: URL) {
   return filepath;
 }
 
+export function runHandler(event: IpcMainEvent, props: RunProps) {
+  console.log("-> update:", props);
+  pyRun(event, props);
+}
+
 export function pyRun(event: IpcMainEvent, props: RunProps) {
   if (running) {
     console.log("already has a running python-shell");

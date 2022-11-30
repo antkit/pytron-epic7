@@ -2,11 +2,13 @@
 import * as path from "path";
 
 // Packages
-import { BrowserWindow, app, ipcMain, IpcMainEvent } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import isDev from "electron-is-dev";
 import prepareNext from "electron-next";
 
-import {RunProps, pyRun, UpdateProps, updateEnvironment} from './pyer'
+import { Configs } from "./common";
+import { envHandler } from "./handlers/enver";
+import { runHandler } from "./handlers/runner";
 
 function createWindow() {
   // Create the browser window.
@@ -21,7 +23,7 @@ function createWindow() {
   });
 
   if (isDev) {
-    mainWindow.loadURL("http://localhost:18123/test");
+    mainWindow.loadURL("http://localhost:18123/pyer/env");
     mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadURL("https://epic7.joyqoo.com");
@@ -54,19 +56,6 @@ app.on("window-all-closed", () => {
   }
 });
 
-// listen the channel `message` and resend the received message to the renderer process
-ipcMain.on("message", (event: IpcMainEvent, message: any) => {
-  console.log(message);
-  setTimeout(() => event.sender.send("message", "hi from electron"), 500);
-});
-
-// message: likes "easyocr,PyAutoGUI==0.9.53"
-ipcMain.on("update", (event: IpcMainEvent, props: UpdateProps) => {
-  console.log("-> update:", props);
-  updateEnvironment(event, props);
-});
-
-ipcMain.on("run", (event: IpcMainEvent, props: RunProps) => {
-  console.log("-> run:", props);
-  pyRun(event, props);
-})
+// listen the channels and call handlers process received messages
+ipcMain.on(Configs.ChannelEnv, envHandler);
+ipcMain.on(Configs.ChannelRun, runHandler);

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import Layout from "../components/Layout";
+import Layout from "../../components/Layout";
 import {
   Container,
   Group,
@@ -15,25 +15,43 @@ import {
   IconScale,
 } from "@tabler/icons";
 
-const CHANNEL = "update";
+enum Commands {
+  Load = "load",
+  Update = "update",
+  Run = "run",
+}
 
-const IndexPage = () => {
+enum Results {
+  Success = "success",
+  Failed = "failed",
+}
+const channelName = "env";
+
+const UpdatePage = () => {
   useEffect(() => {
-    const handleMessage = (_event, args) => alert(args);
+    const handleMessage = (_event, args) => {
+      console.log(args);
+      alert(args);
+    };
 
     // add a listener to CHANNEL channel
-    global.ipcRenderer.addListener(CHANNEL, handleMessage);
+    global.ipcRenderer.addListener(channelName, handleMessage);
 
     return () => {
-      global.ipcRenderer.removeListener(CHANNEL, handleMessage);
+      global.ipcRenderer.removeListener(channelName, handleMessage);
     };
   }, []);
 
   const onSayHiClick = () => {
-    global.ipcRenderer.send(CHANNEL, "hi from next");
+    global.ipcRenderer.send(channelName, Commands.Load);
   };
 
-  const handleStart = () => {};
+  const handleStart = () => {
+    global.ipcRenderer.send(channelName, Commands.Update, {
+      version: "0.1.0",
+      packages: ["easyocr"],
+    });
+  };
 
   return (
     <Layout title="Home | Next.js + TypeScript + Electron Example">
@@ -102,4 +120,4 @@ const IndexPage = () => {
   );
 };
 
-export default IndexPage;
+export default UpdatePage;
