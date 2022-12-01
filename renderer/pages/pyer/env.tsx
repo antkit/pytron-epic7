@@ -16,22 +16,26 @@ import {
 } from "@tabler/icons";
 
 enum Commands {
-  Load = "load",
-  Update = "update",
+  DetectPython3 = "detectPython3",
+  Init = "init",
+  Remove = "remove",
   Run = "run",
+  ReadConfig = "readConfig",
+  WriteConfig = "writeConfig",
+  Download = "download",
 }
 
 enum Results {
   Success = "success",
   Failed = "failed",
 }
-const channelName = "env";
+const channelName = "pytron";
 
 const UpdatePage = () => {
   useEffect(() => {
     const handleMessage = (_event, args) => {
       console.log(args);
-      alert(args);
+      // alert(args);
     };
 
     // add a listener to CHANNEL channel
@@ -43,14 +47,15 @@ const UpdatePage = () => {
   }, []);
 
   const onSayHiClick = () => {
-    global.ipcRenderer.send(channelName, Commands.Load);
+    global.ipcRenderer.send(channelName, Commands.ReadConfig);
   };
 
-  const handleStart = () => {
-    global.ipcRenderer.send(channelName, Commands.Update, {
-      version: "0.1.0",
-      packages: ["easyocr"],
-    });
+  const handleDetectPython = () => {
+    global.ipcRenderer.send(channelName, Commands.DetectPython3);
+  };
+
+  const handleInit = () => {
+    global.ipcRenderer.send(channelName, Commands.Init, {version: "0.1.0", packages:["easyocr", "PyAutoGUI==0.9.53"]});
   };
 
   return (
@@ -63,44 +68,9 @@ const UpdatePage = () => {
       </p> */}
 
       <Container size="xl">
-        <Tabs defaultValue="maze">
-          <Tabs.List>
-            <Tabs.Tab
-              value="maze"
-              icon={<IconBorderAll color="#7bc62d" size={20} />}
-            >
-              迷宫
-            </Tabs.Tab>
-            <Tabs.Tab
-              value="secretshop"
-              icon={<IconScale color="#7bc62d" size={20} />}
-            >
-              秘密商店
-            </Tabs.Tab>
-            <Tabs.Tab
-              value="gavel"
-              icon={<IconGavel color="#7bc62d" size={20} />}
-            >
-              打铁
-            </Tabs.Tab>
-          </Tabs.List>
-
-          <Tabs.Panel value="maze" p="xs">
-            冒险迷宫
-          </Tabs.Panel>
-
-          <Tabs.Panel value="secretshop" p="xs">
-            秘密商店
-          </Tabs.Panel>
-
-          <Tabs.Panel value="gavel" p="xs">
-            Settings tab content
-          </Tabs.Panel>
-        </Tabs>
-
         <Stack mt={10}>
           <UnstyledButton
-            onClick={handleStart}
+            onClick={handleDetectPython}
             bg="#eee"
             sx={{ border: "1px solid gray", borderRadius: "5px" }}
           >
@@ -108,6 +78,21 @@ const UpdatePage = () => {
               <IconRecycle color="green" size={32} />
               <div>
                 <Text color="green">开始循环</Text>
+                <Text size="xs" color="green">
+                  bob@handsome.inc
+                </Text>
+              </div>
+            </Group>
+          </UnstyledButton>
+          <UnstyledButton
+            onClick={handleInit}
+            bg="#eee"
+            sx={{ border: "1px solid gray", borderRadius: "5px" }}
+          >
+            <Group position="center">
+              <IconRecycle color="green" size={32} />
+              <div>
+                <Text color="green">初始化</Text>
                 <Text size="xs" color="green">
                   bob@handsome.inc
                 </Text>

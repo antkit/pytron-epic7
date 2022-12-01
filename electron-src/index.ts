@@ -7,8 +7,7 @@ import isDev from "electron-is-dev";
 import prepareNext from "electron-next";
 
 import { Configs } from "./common";
-import { envHandler } from "./handlers/enver";
-import { runHandler } from "./handlers/runner";
+import { pytronHandler } from "./pytron";
 
 function createWindow() {
   // Create the browser window.
@@ -57,5 +56,4 @@ app.on("window-all-closed", () => {
 });
 
 // listen the channels and call handlers process received messages
-ipcMain.on(Configs.ChannelEnv, envHandler);
-ipcMain.on(Configs.ChannelRun, runHandler);
+ipcMain.on(Configs.ChannelPytron, pytronHandler);

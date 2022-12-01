@@ -1,12 +1,13 @@
 export enum Paths {
-  Root = ".pytron",
+  Root = ".pytron-epic7",
 
   PyEnv = "pyenv",
-  PySr = "pysrc",
   Res = "res",
 }
 
 export enum Configs {
   ChannelEnv = "env",
   ChannelRun = "run",
+  ChannelPytron = "pytron",
+  ConfigFile = "config.json",
 }
