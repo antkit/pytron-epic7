@@ -11,8 +11,6 @@ import { Paths, Configs } from "./common";
 
 const dRoot = path.join(app.getPath("home"), Paths.Root);
 
-let running = false;
-
 enum Commands {
   DetectPython3 = "detectPython3", // 检测系统Python环境
   Init = "init", // 初始化pytron环境
@@ -197,24 +195,26 @@ class RunProps {
 }
 
 function run(event: IpcMainEvent, props: RunProps) {
-  console.log("run");
-
-  if (running) {
+  console.log("run", props);
+  if (global.pyShell) {
     console.log("already has a running python-shell");
     return;
   }
 
-  running = true;
-
-  // TODO waiting download finish
-  console.log("continue pyrun", props);
+  // TODO check hash, and break if mismatch
 
   const options: Options = {
     mode: "text",
+    pythonOptions: ["-u"], // get print results in real-time
     pythonPath: path.join(dRoot, Paths.PyEnv, "bin", "python"),
+    scriptPath: dRoot,
   };
-  const filepath = path.join(dRoot, props.filename);
-  const py = PythonShell.run(filepath, options);
+  global.pyShell = PythonShell.run(props.filename, options, (err) => {
+    if (err) {
+      console.log("run error", err);
+    }
+  });
+  const py = global.pyShell;
   py.on("message", (m: string) => {
     console.log("message", m);
     try {
@@ -225,13 +225,9 @@ function run(event: IpcMainEvent, props: RunProps) {
       // ignore unprocessable messages
     }
   });
-  // py.on("error", () => {
-  //   running = false;
-  //   reply(event, channelName, Commands.Run, Status.Error);
-  // });
   // py.on("close", () => {
-  //   running = false;
   //   reply(event, channelName, Commands.Run, Status.Done);
+  //   global.pyShell = null;
   // });
   // end the input stream and allow the process to exit
   py.end(function (err, code, signal) {
@@ -240,11 +236,9 @@ function run(event: IpcMainEvent, props: RunProps) {
     } else {
       console.log("The exit code was: " + code);
       console.log("The exit signal was: " + signal);
-      console.log("finished");
       reply(event, channelName, Commands.Run, Status.Done);
     }
-
-    running = false;
+    global.pyShell = null;
   });
 }
 
@@ -283,35 +277,29 @@ function download(event: IpcMainEvent, props: DownloadProps) {
   const url = new URL(props.url);
   const pnames = url.pathname.split("/");
   if (pnames.length < 1) {
-    reply(
-      event,
-      channelName,
-      Commands.Download,
-      Status.Error,
-      "illegal pathname:" + url.pathname
-    );
+    const data = "illegal pathname:" + url.pathname;
+    reply(event, channelName, Commands.Download, Status.Error, data);
     return;
   }
 
   const filepath = path.join(dRoot, pnames[pnames.length - 1]);
-  if (fs.existsSync(filepath)) {
+  if (props.md5.length > 0 && fs.existsSync(filepath)) {
     // TODO check md5, only download if md5 mismatch
   }
 
   const file = fs.createWriteStream(filepath);
-  const request = url.protocol === "http" ? http.get(url) : https.get(url);
+  const request = url.protocol === "http:" ? http.get(url) : https.get(url);
   request.on("response", (resp: http.IncomingMessage) => {
     resp.pipe(file);
-    // reply(event, channelName, Commands.Download, Status.Info, )
+    file.on("finish", () => {
+      console.log("download finish");
+      file.close();
+      reply(event, channelName, Commands.Download, Status.Done);
+    });
   });
   request.on("error", () => {
     console.log("download error");
     file.close();
     reply(event, channelName, Commands.Download, Status.Error);
-  });
-  request.on("finish", () => {
-    console.log("download finish");
-    file.close();
-    reply(event, channelName, Commands.Download, Status.Done);
   });
 }

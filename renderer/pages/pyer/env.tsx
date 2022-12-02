@@ -4,15 +4,11 @@ import {
   Container,
   Group,
   Stack,
-  Tabs,
   Text,
   UnstyledButton,
 } from "@mantine/core";
 import {
-  IconBorderAll,
-  IconGavel,
   IconRecycle,
-  IconScale,
 } from "@tabler/icons";
 
 enum Commands {
@@ -55,7 +51,20 @@ const UpdatePage = () => {
   };
 
   const handleInit = () => {
-    global.ipcRenderer.send(channelName, Commands.Init, {version: "0.1.0", packages:["easyocr", "PyAutoGUI==0.9.53"]});
+    global.ipcRenderer.send(channelName, Commands.Init, {version: "0.1.0", packages:["easyocr", "PyAutoGUI==0.9.53", "trio"]});
+  };
+
+  const handleRunTest = () => {
+    global.ipcRenderer.send(channelName, Commands.Run, {filename: "test.py", md5: ""});
+  };
+
+  const handleDownloadTest = () => {
+    const props = {
+      url: "http://localhost:18123/code/test.py",
+      md5: "",
+      type: "code",
+    }
+    global.ipcRenderer.send(channelName, Commands.Download, props);
   };
 
   return (
@@ -77,7 +86,7 @@ const UpdatePage = () => {
             <Group position="center">
               <IconRecycle color="green" size={32} />
               <div>
-                <Text color="green">开始循环</Text>
+                <Text color="green">检测Python</Text>
                 <Text size="xs" color="green">
                   bob@handsome.inc
                 </Text>
@@ -93,6 +102,36 @@ const UpdatePage = () => {
               <IconRecycle color="green" size={32} />
               <div>
                 <Text color="green">初始化</Text>
+                <Text size="xs" color="green">
+                  bob@handsome.inc
+                </Text>
+              </div>
+            </Group>
+          </UnstyledButton>
+          <UnstyledButton
+            onClick={handleDownloadTest}
+            bg="#eee"
+            sx={{ border: "1px solid gray", borderRadius: "5px" }}
+          >
+            <Group position="center">
+              <IconRecycle color="green" size={32} />
+              <div>
+                <Text color="green">下载测试</Text>
+                <Text size="xs" color="green">
+                  bob@handsome.inc
+                </Text>
+              </div>
+            </Group>
+          </UnstyledButton>
+          <UnstyledButton
+            onClick={handleRunTest}
+            bg="#eee"
+            sx={{ border: "1px solid gray", borderRadius: "5px" }}
+          >
+            <Group position="center">
+              <IconRecycle color="green" size={32} />
+              <div>
+                <Text color="green">运行测试</Text>
                 <Text size="xs" color="green">
                   bob@handsome.inc
                 </Text>

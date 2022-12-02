@@ -2,12 +2,14 @@
 import * as path from "path";
 
 // Packages
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, globalShortcut, ipcMain } from "electron";
 import isDev from "electron-is-dev";
 import prepareNext from "electron-next";
 
 import { Configs } from "./common";
 import { pytronHandler } from "./pytron";
+
+const globalShortcutKill = "Shift+CommandOrControl+K";
 
 function createWindow() {
   // Create the browser window.
@@ -37,6 +39,13 @@ app.whenReady().then(async () => {
     await prepareNext("./renderer");
   }
 
+  globalShortcut.register(globalShortcutKill, () => {
+    console.log("reveived global kill message!");
+    if (global.pyShell) {
+      global.pyShell.kill();
+      global.pyShell = null;
+    }
+  });
   createWindow();
 
   app.on("activate", function () {
