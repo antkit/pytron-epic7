@@ -15,10 +15,11 @@ enum Commands {
   DetectPython3 = "detectPython3", // 检测系统Python环境
   Init = "init", // 初始化pytron环境
   Remove = "remove", // 移除pytron环境
-  Run = "run", // python-shell执行venv下的python
   ReadConfig = "readConfig", // 读取配置文件
   WriteConfig = "writeConfig", // 写入配置文件
   Download = "download", // 下载资源、代码文件
+  RunPysh = "runPysh", // python-shell执行venv下的python
+  RunBin = "runBin",
 }
 
 enum Status {
@@ -52,8 +53,8 @@ export function pytronHandler(
     case Commands.Remove:
       remove(event);
       break;
-    case Commands.Run:
-      run(event, data as RunProps);
+    case Commands.RunPysh:
+      runPysh(event, data as RunProps);
       break;
     case Commands.ReadConfig:
       readConfig(event);
@@ -63,6 +64,12 @@ export function pytronHandler(
       break;
     case Commands.Download:
       download(event, data as DownloadProps);
+      break;
+    case Commands.RunBin:
+      runBin(event, data as RunProps);
+      break;
+    default:
+      console.error("unsupported command", cmd);
       break;
   }
 }
@@ -192,54 +199,92 @@ function remove(event: IpcMainEvent) {
 class RunProps {
   filename: string = "";
   md5: string = "";
+  args: string[] | undefined;
 }
 
-function run(event: IpcMainEvent, props: RunProps) {
-  console.log("run", props);
-  if (global.pyShell) {
-    console.log("already has a running python-shell");
-    return;
+function killGlobalRunner() {
+  if (global.runner) {
+    global.runner.kill();
+    global.runner = null;
   }
+}
 
+function run(cmd: Commands, event: IpcMainEvent, props: RunProps) {
   // TODO check hash, and break if mismatch
 
-  const options: Options = {
-    mode: "text",
-    pythonOptions: ["-u"], // get print results in real-time
-    pythonPath: path.join(dRoot, Paths.PyEnv, "bin", "python"),
-    scriptPath: dRoot,
-  };
-  global.pyShell = PythonShell.run(props.filename, options, (err) => {
-    if (err) {
-      console.log("run error", err);
-    }
-  });
-  const py = global.pyShell;
-  py.on("message", (m: string) => {
-    console.log("message", m);
+  if (cmd === Commands.RunPysh) {
+    const options: Options = {
+      mode: "text",
+      pythonOptions: ["-u"], // get print results in real-time
+      pythonPath: path.join(dRoot, Paths.PyEnv, "bin", "python"),
+      scriptPath: dRoot,
+      args: props.args,
+    };
+    global.runner = PythonShell.run(props.filename, options, (err) => {
+      if (err) {
+        console.log("run error", err);
+      }
+    });
+  } else {
+    global.runner = spawn(path.join(dRoot, props.filename), props.args);
+  }
+  const ps = global.runner;
+  const messageCallback = (data: any) => {
+    console.log("message", data);
     try {
-      const j = JSON.parse(m);
+      const j = JSON.parse(data);
+      if (typeof j !== "object") {
+        return;
+      }
       console.log("json:", j);
-      reply(event, channelName, Commands.Run, Status.Info, j);
+      reply(event, channelName, Commands.RunPysh, Status.Info, j);
     } catch {
       // ignore unprocessable messages
     }
-  });
-  // py.on("close", () => {
-  //   reply(event, channelName, Commands.Run, Status.Done);
-  //   global.pyShell = null;
-  // });
-  // end the input stream and allow the process to exit
-  py.end(function (err, code, signal) {
-    if (err) {
-      reply(event, channelName, Commands.Run, Status.Error, err);
-    } else {
-      console.log("The exit code was: " + code);
-      console.log("The exit signal was: " + signal);
-      reply(event, channelName, Commands.Run, Status.Done);
-    }
-    global.pyShell = null;
-  });
+  };
+  if (cmd === Commands.RunPysh) {
+    ps.on("message", messageCallback);
+    // end the input stream and allow the process to exit
+    (ps as PythonShell).end(function (err, code, signal) {
+      if (err) {
+        reply(event, channelName, cmd, Status.Error, err);
+      } else {
+        console.log("The exit code was: " + code);
+        console.log("The exit signal was: " + signal);
+        reply(event, channelName, cmd, Status.Done);
+      }
+      global.runner = null;
+    });
+  } else {
+    ps.stdout?.on("data", messageCallback);
+    ps.on("error", (err: Error) => {
+      console.log("error", err.message);
+      reply(event, channelName, cmd, Status.Error, err.message);
+      killGlobalRunner();
+    });
+    ps.on("exit", () => {
+      reply(event, channelName, cmd, Status.Done);
+      killGlobalRunner();
+    });
+  }
+}
+
+function runPysh(event: IpcMainEvent, props: RunProps) {
+  console.log("run", props);
+  if (global.runner) {
+    console.log("already has a running python-shell");
+    return;
+  }
+  run(Commands.RunPysh, event, props);
+}
+
+function runBin(event: IpcMainEvent, props: RunProps) {
+  console.log("runBin", props);
+  if (global.runner) {
+    console.log("already has a running binary");
+    return;
+  }
+  run(Commands.RunBin, event, props);
 }
 
 function readConfig(event: IpcMainEvent) {

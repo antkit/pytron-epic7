@@ -41,9 +41,9 @@ app.whenReady().then(async () => {
 
   globalShortcut.register(globalShortcutKill, () => {
     console.log("reveived global kill message!");
-    if (global.pyShell) {
-      global.pyShell.kill();
-      global.pyShell = null;
+    if (global.runner) {
+      global.runner.kill();
+      global.runner = null;
     }
   });
   createWindow();

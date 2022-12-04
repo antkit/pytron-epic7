@@ -2,12 +2,14 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ipcRenderer, IpcRenderer } from 'electron'
 import { PythonShell } from "python-shell"
+import { ChildProcess } from "child_process"
 
 declare global {
   namespace NodeJS {
     interface Global {
       ipcRenderer: IpcRenderer
-      pyShell: PythonShell|null
+      // pyShell: PythonShell|null
+      runner: PythonShell|ChildProcess|null
     }
   }
 }

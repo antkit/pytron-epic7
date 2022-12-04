@@ -12,13 +12,15 @@ import {
 } from "@tabler/icons";
 
 enum Commands {
-  DetectPython3 = "detectPython3",
-  Init = "init",
-  Remove = "remove",
-  Run = "run",
-  ReadConfig = "readConfig",
-  WriteConfig = "writeConfig",
-  Download = "download",
+  DetectPython3 = "detectPython3", // 检测系统Python环境
+  Init = "init", // 初始化pytron环境
+  Remove = "remove", // 移除pytron环境
+  // Run = "run", // python-shell执行venv下的python
+  ReadConfig = "readConfig", // 读取配置文件
+  WriteConfig = "writeConfig", // 写入配置文件
+  Download = "download", // 下载资源、代码文件
+  RunPysh = "runPysh", // python-shell执行venv下的python
+  RunBin = "runBin",
 }
 
 enum Results {
@@ -54,8 +56,12 @@ const UpdatePage = () => {
     global.ipcRenderer.send(channelName, Commands.Init, {version: "0.1.0", packages:["easyocr", "PyAutoGUI==0.9.53", "trio"]});
   };
 
-  const handleRunTest = () => {
-    global.ipcRenderer.send(channelName, Commands.Run, {filename: "test.py", md5: ""});
+  const handleRunPyshTest = () => {
+    global.ipcRenderer.send(channelName, Commands.RunPysh, {filename: "test.py", md5: ""});
+  };
+
+  const handleRunBinTest = () => {
+    global.ipcRenderer.send(channelName, Commands.RunBin, {filename: "run.bin", md5: ""});
   };
 
   const handleDownloadTest = () => {
@@ -124,14 +130,29 @@ const UpdatePage = () => {
             </Group>
           </UnstyledButton>
           <UnstyledButton
-            onClick={handleRunTest}
+            onClick={handleRunPyshTest}
             bg="#eee"
             sx={{ border: "1px solid gray", borderRadius: "5px" }}
           >
             <Group position="center">
               <IconRecycle color="green" size={32} />
               <div>
-                <Text color="green">运行测试</Text>
+                <Text color="green">运行测试Pysh</Text>
+                <Text size="xs" color="green">
+                  bob@handsome.inc
+                </Text>
+              </div>
+            </Group>
+          </UnstyledButton>
+          <UnstyledButton
+            onClick={handleRunBinTest}
+            bg="#eee"
+            sx={{ border: "1px solid gray", borderRadius: "5px" }}
+          >
+            <Group position="center">
+              <IconRecycle color="green" size={32} />
+              <div>
+                <Text color="green">运行测试Bin</Text>
                 <Text size="xs" color="green">
                   bob@handsome.inc
                 </Text>
