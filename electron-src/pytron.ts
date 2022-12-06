@@ -247,7 +247,8 @@ function run(cmd: Commands, event: IpcMainEvent, props: RunProps) {
     // end the input stream and allow the process to exit
     (ps as PythonShell).end(function (err, code, signal) {
       if (err) {
-        reply(event, channelName, cmd, Status.Error, err);
+        console.log("err: " + err.message)
+        // reply(event, channelName, cmd, Status.Error, err);
       } else {
         console.log("The exit code was: " + code);
         console.log("The exit signal was: " + signal);
@@ -257,11 +258,11 @@ function run(cmd: Commands, event: IpcMainEvent, props: RunProps) {
     });
   } else {
     ps.stdout?.on("data", messageCallback);
-    ps.on("error", (err: Error) => {
-      console.log("error", err.message);
-      reply(event, channelName, cmd, Status.Error, err.message);
-      killGlobalRunner();
-    });
+    // ps.on("error", (err: Error) => {
+    //   console.log("error", err.message);
+    //   reply(event, channelName, cmd, Status.Error, err.message);
+    //   killGlobalRunner();
+    // });
     ps.on("exit", () => {
       reply(event, channelName, cmd, Status.Done);
       killGlobalRunner();
