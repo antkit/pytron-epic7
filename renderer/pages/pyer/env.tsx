@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Layout from "../../components/Layout";
 import {
   Container,
   Group,
+  NumberInput,
   Stack,
   Text,
   UnstyledButton,
@@ -29,7 +30,9 @@ enum Results {
 }
 const channelName = "pytron";
 
-const UpdatePage = () => {
+const EnvPage = () => {
+  const [loopTimes, setLoopTimes] = useState(10)
+
   useEffect(() => {
     const handleMessage = (_event, args) => {
       console.log(args);
@@ -57,7 +60,7 @@ const UpdatePage = () => {
   };
 
   const handleRunPyshTest = () => {
-    global.ipcRenderer.send(channelName, Commands.RunPysh, {filename: "test.py", md5: ""});
+    global.ipcRenderer.send(channelName, Commands.RunPysh, {filename: "game.py", md5: "", args: ["secretshop", "" + loopTimes]});
   };
 
   const handleRunBinTest = () => {
@@ -129,21 +132,24 @@ const UpdatePage = () => {
               </div>
             </Group>
           </UnstyledButton>
-          <UnstyledButton
-            onClick={handleRunPyshTest}
-            bg="#eee"
-            sx={{ border: "1px solid gray", borderRadius: "5px" }}
-          >
-            <Group position="center">
-              <IconRecycle color="green" size={32} />
-              <div>
-                <Text color="green">运行测试Pysh</Text>
-                <Text size="xs" color="green">
-                  bob@handsome.inc
-                </Text>
-              </div>
-            </Group>
-          </UnstyledButton>
+          <Group>
+            <NumberInput defaultValue={loopTimes} onChange={setLoopTimes} />
+            <UnstyledButton
+              onClick={handleRunPyshTest}
+              bg="#eee"
+              sx={{ border: "1px solid gray", borderRadius: "5px" }}
+            >
+              <Group position="center">
+                <IconRecycle color="green" size={32} />
+                <div>
+                  <Text color="green">运行测试Pysh</Text>
+                  <Text size="xs" color="green">
+                    bob@handsome.inc
+                  </Text>
+                </div>
+              </Group>
+            </UnstyledButton>
+          </Group>
           <UnstyledButton
             onClick={handleRunBinTest}
             bg="#eee"
@@ -165,4 +171,4 @@ const UpdatePage = () => {
   );
 };
 
-export default UpdatePage;
+export default EnvPage;

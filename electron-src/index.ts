@@ -20,7 +20,7 @@ function createWindow() {
       contextIsolation: false,
       preload: path.join(__dirname, "preload.js"),
     },
-    width: isDev ? 1440 : 800,
+    width: isDev ? 1240 : 800,
   });
 
   if (isDev) {
