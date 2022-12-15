@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
-import { Container, Group, NumberInput, Stack, Tabs, Text, UnstyledButton } from "@mantine/core";
+import { Tabs } from "@mantine/core";
 import { SecretShop, Venture } from "../components/Epic7";
-import { Icon123, IconBorderAll, IconMessage, IconRecycle, IconScale } from "@tabler/icons";
-import { Test } from "../components/Epic7/Test";
+import { IconAxe, IconBorderAll, IconLetterG, IconLetterP, IconScale } from "@tabler/icons";
 
 enum Commands {
   DetectPython3 = "detectPython3", // 检测系统Python环境
@@ -46,27 +45,45 @@ const IndexPage = () => {
         <Link href="/about">About</Link>
       </p> */}
       {/* <Container size="xs"> */}
-        <Tabs defaultValue="secretShop">
+        <Tabs defaultValue="secretshop">
           <Tabs.List>
-            <Tabs.Tab icon={<IconScale color="#7bc62d" size={20} />} value="secretShop">
+            <Tabs.Tab icon={<IconScale color="#7bc62d" size={20} />} value="secretshop">
               秘密商店
             </Tabs.Tab>
             <Tabs.Tab icon={<IconBorderAll color="#7bc62d" size={20} />} value="venture">
               冒险迷宫
             </Tabs.Tab>
+            <Tabs.Tab icon={<IconLetterG color="#7bc62d" size={20} />} value="gvg">
+              公会战
+            </Tabs.Tab>
+            <Tabs.Tab icon={<IconLetterP color="#7bc62d" size={20} />} value="pvp">
+              竞技场
+            </Tabs.Tab>
+            <Tabs.Tab icon={<IconAxe color="#7bc62d" size={20} />} value="equipstat">
+              装备评分
+            </Tabs.Tab>
           </Tabs.List>
-          <Tabs.Panel value="secretShop" p="xs">
+          <Tabs.Panel value="secretshop" p="xs">
             <SecretShop buyList={["covenant_bookmark", "mystic_medal"]} />
           </Tabs.Panel>
           <Tabs.Panel value="venture" p="xs">
-            <Venture buyList={["covenant_bookmark", "mystic_medal"]} />
+            <Venture />
+          </Tabs.Panel>
+          <Tabs.Panel value="gvg" p="xs">
+            <Venture />
+          </Tabs.Panel>
+          <Tabs.Panel value="pvp" p="xs">
+            <Venture />
+          </Tabs.Panel>
+          <Tabs.Panel value="equipstat" p="xs">
+            <Venture />
           </Tabs.Panel>
         </Tabs>
       {/* </Container> */}
 
-      <Container size="xl">
+      {/* <Container size="xl">
         <Test />
-      </Container>
+      </Container> */}
     </Layout>
   );
 };

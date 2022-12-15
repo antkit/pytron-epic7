@@ -1,11 +1,28 @@
 import { forwardRef, useState } from "react";
 import {
   Avatar,
+  Card,
   Group,
   MultiSelect,
   NumberInput,
+  Stack,
   Text,
+  UnstyledButton,
 } from "@mantine/core";
+import { IconRecycle } from "@tabler/icons";
+
+const channelName = "pytron";
+
+enum Commands {
+  DetectPython3 = "detectPython3", // 检测系统Python环境
+  Init = "init", // 初始化pytron环境
+  Remove = "remove", // 移除pytron环境
+  ReadConfig = "readConfig", // 读取配置文件
+  WriteConfig = "writeConfig", // 写入配置文件
+  Download = "download", // 下载资源、代码文件
+  RunPysh = "runPysh", // python-shell运行python代码
+  RunBin = "runBin", // 运行可执行文件
+}
 
 const buyListData = [
   {
@@ -33,7 +50,7 @@ const breakListData = [
     image: "ma_unknown.png",
     label: "85级红装",
     value: "equip_epic_lv85",
-    description: "85级史诗装备, 售价140万金币",
+    description: "随机85级史诗装备, 售价140万金币",
   },
 ];
 
@@ -59,40 +76,86 @@ const SelectItem = forwardRef<HTMLDivElement, ItemProps>(
   )
 );
 
-interface SecretShopProps {
-  buyList: string[];
-}
+interface SecretShopProps {}
 
 export const SecretShop = (props: SecretShopProps) => {
-  const [buyList, setBuyList] = useState(["covenant_bookmark", "mystic_medal"])
-  const [breakList, setBreakList] = useState(["equip_epic_lv85"])
+  const [loopTimes, setLoopTimes] = useState(10);
+  const [remainDiamonds, setRemainDiamonds] = useState(0);
+  const [remainGolds, setRemainGolds] = useState(0);
+  const [buyList, setBuyList] = useState(["covenant_bookmark", "mystic_medal"]);
+  const [breakList, setBreakList] = useState(["equip_epic_lv85"]);
+
+  const handleStartLoop = () => {
+    global.ipcRenderer.send(channelName, Commands.RunPysh, {
+      filename: "game.py",
+      md5: "",
+      args: ["secretshop", "" + loopTimes],
+    });
+  };
+
   return (
-    <>
-      <MultiSelect
-        value={buyList}
-        onChange={setBuyList}
-        label="刷出时自动购买:"
-        placeholder="选择你想购买的商品"
-        itemComponent={SelectItem}
-        data={buyListData}
-        nothingFound="无"
-        maxDropdownHeight={400}
-      />
-      <MultiSelect
-        value={breakList}
-        onChange={setBreakList}
-        label="刷出时停止循环:"
-        placeholder="选择你关注但不自动购买的商品"
-        itemComponent={SelectItem}
-        data={breakListData}
-        nothingFound="无"
-        maxDropdownHeight={400}
-      />
-      <NumberInput
-        label="保留金币:"
-        rightSection={<Text color="gray">万</Text>}
-      />
-      <NumberInput label="保留钻石:" />
-    </>
+    <Card radius={10} shadow="xl">
+      <Group noWrap>
+        <Stack sx={{ width: "100%" }}>
+          <MultiSelect
+            value={buyList}
+            onChange={setBuyList}
+            label="刷出时自动购买:"
+            placeholder="选择你想购买的商品"
+            itemComponent={SelectItem}
+            data={buyListData}
+            nothingFound="无"
+            maxDropdownHeight={400}
+          />
+          <MultiSelect
+            value={breakList}
+            onChange={setBreakList}
+            label="刷出时停止循环:"
+            placeholder="选择你关注但不自动购买的商品"
+            itemComponent={SelectItem}
+            data={breakListData}
+            nothingFound="无"
+            maxDropdownHeight={400}
+          />
+          <NumberInput
+            label="循环次数:"
+            min={0}
+            step={10}
+            value={loopTimes}
+            onChange={setLoopTimes}
+          />
+          <NumberInput
+            label="保留金币:"
+            min={0}
+            value={remainGolds}
+            onChange={setRemainGolds}
+            rightSection={<Text color="gray">万</Text>}
+          />
+          <NumberInput
+            min={0}
+            value={remainDiamonds}
+            onChange={setRemainDiamonds}
+            label="保留钻石:"
+          />
+        </Stack>
+        <Stack sx={{ width: 300 }}>
+          <UnstyledButton
+            bg="#eee"
+            onClick={handleStartLoop}
+            sx={{ border: "1px solid gray", borderRadius: "5px" }}
+          >
+            <Group position="center">
+              <IconRecycle color="green" size={32} />
+              <div>
+                <Text color="green">开始循环</Text>
+                <Text size="xs" color="green">
+                  bob@handsome.inc
+                </Text>
+              </div>
+            </Group>
+          </UnstyledButton>
+        </Stack>
+      </Group>
+    </Card>
   );
 };
