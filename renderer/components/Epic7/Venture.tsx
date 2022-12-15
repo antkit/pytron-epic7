@@ -32,6 +32,12 @@ const ventureData = [
     value: "leif",
     description: "自动使用叶子补充行动力",
   },
+  {
+    image: "diamond.png",
+    label: "使用钻石",
+    value: "diamond",
+    description: "自动使用钻石补充行动力,如果同时选择了叶子,则叶子优先",
+  },
 ];
 
 interface ItemProps extends React.ComponentPropsWithoutRef<"div"> {
@@ -95,28 +101,26 @@ export const Venture = (props: VentureProps) => {
             </Group>
           </UnstyledButton>
       </Card>
-      <Card mt={10} radius={10} shadow="xl">
-        <Stack>
-          <Select label="选择关卡:" defaultValue="current" data={missions} />
-          <MultiSelect
-            value={ventureOptions}
-            onChange={setVentureOptions}
-            label="冒险选项:"
-            placeholder="定义冒险行为"
-            itemComponent={SelectItem}
-            data={ventureData}
-            nothingFound="无"
-            maxDropdownHeight={400}
-          />
-          <NumberInput
-            label="循环次数:"
-            min={0}
-            step={10}
-            value={loopTimes}
-            onChange={setLoopTimes}
-          />
-        </Stack>
-      </Card>
+      <Stack>
+        <Select label="选择关卡:" defaultValue="current" data={missions} />
+        <MultiSelect
+          value={ventureOptions}
+          onChange={setVentureOptions}
+          label="冒险选项:"
+          placeholder="定义冒险行为"
+          itemComponent={SelectItem}
+          data={ventureData}
+          nothingFound="无"
+          maxDropdownHeight={400}
+        />
+        <NumberInput
+          label="循环次数:"
+          min={0}
+          step={10}
+          value={loopTimes}
+          onChange={setLoopTimes}
+        />
+      </Stack>
     </>
   );
 };

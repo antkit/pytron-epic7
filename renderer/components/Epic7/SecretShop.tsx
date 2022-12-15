@@ -1,4 +1,4 @@
-import { forwardRef, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import {
   Avatar,
   Card,
@@ -84,6 +84,19 @@ export const SecretShop = (props: SecretShopProps) => {
   const [remainGolds, setRemainGolds] = useState(0);
   const [buyList, setBuyList] = useState(["covenant_bookmark", "mystic_medal"]);
   const [breakList, setBreakList] = useState(["equip_epic_lv85"]);
+
+  useEffect(() => {
+    const handleMessage = (_event, args) => {
+      console.log(args);
+    };
+
+    // add a listener to CHANNEL channel
+    global.ipcRenderer.addListener(channelName, handleMessage);
+
+    return () => {
+      global.ipcRenderer.removeListener(channelName, handleMessage);
+    };
+  }, []);
 
   const handleStartLoop = () => {
     global.ipcRenderer.send(channelName, Commands.RunPysh, {
