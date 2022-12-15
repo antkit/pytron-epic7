@@ -12,3 +12,7 @@ Electron supports GUI, and Python supports automation.
 ## Terminate a running script
 
 Use Shift + Ctrl + K on Windows, and Shift + Command + K on MacOS.
+
+## Resources
+
+https://epic7x.com/materials/

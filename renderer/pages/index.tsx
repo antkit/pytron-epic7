@@ -1,9 +1,26 @@
-import { useEffect } from "react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
-import { Container, Tabs } from "@mantine/core";
+import { Container, Group, NumberInput, Stack, Tabs, Text, UnstyledButton } from "@mantine/core";
 import { SecretShop, Venture } from "../components/Epic7";
-import { Icon123, IconBorderAll, IconMessage, IconScale } from "@tabler/icons";
+import { Icon123, IconBorderAll, IconMessage, IconRecycle, IconScale } from "@tabler/icons";
+import { Test } from "../components/Epic7/Test";
+
+enum Commands {
+  DetectPython3 = "detectPython3", // 检测系统Python环境
+  Init = "init", // 初始化pytron环境
+  Remove = "remove", // 移除pytron环境
+  ReadConfig = "readConfig", // 读取配置文件
+  WriteConfig = "writeConfig", // 写入配置文件
+  Download = "download", // 下载资源、代码文件
+  RunPysh = "runPysh", // python-shell执行venv下的python
+  RunBin = "runBin",
+}
+
+enum Results {
+  Success = "success",
+  Failed = "failed",
+}
+const channelName = "pytron";
 
 const IndexPage = () => {
   useEffect(() => {
@@ -17,9 +34,9 @@ const IndexPage = () => {
     };
   }, []);
 
-  const onSayHiClick = () => {
-    global.ipcRenderer.send("message", "hi from next");
-  };
+  // const onSayHiClick = () => {
+  //   global.ipcRenderer.send("message", "hi from next");
+  // };
 
   return (
     <Layout title="第七史诗助手">
@@ -46,6 +63,10 @@ const IndexPage = () => {
           </Tabs.Panel>
         </Tabs>
       {/* </Container> */}
+
+      <Container size="xl">
+        <Test />
+      </Container>
     </Layout>
   );
 };
