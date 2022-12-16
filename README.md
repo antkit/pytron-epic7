@@ -8,6 +8,7 @@ Electron supports GUI, and Python supports automation.
 
 * Init
 * Run
+* Terminate Shift + Command + K
 
 ## Terminate a running script
 

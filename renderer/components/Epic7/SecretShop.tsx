@@ -3,6 +3,7 @@ import {
   Avatar,
   Card,
   Group,
+  Loader,
   MultiSelect,
   NumberInput,
   Stack,
@@ -39,7 +40,7 @@ const buyListData = [
     description: "神秘奖牌x50, 售价28万金币",
   },
   {
-    image: "ma_unknown.png",
+    image: "hero_2x.png",
     label: "2星狗粮",
     value: "hero_star_2x",
     description: "随机2星英雄, 售价2.8万金币",
@@ -84,14 +85,16 @@ class Response {
   data: Object;
 }
 
+class BoughtGoods {
+  goods: string;
+  count: number;
+}
+
 class LoopHistory {
   startedAt: Date;
   loopTimes: number;
   loopedTimes: number;
-  boughtGoods: {
-    goods: string;
-    count: number;
-  }[];
+  boughtGoods: BoughtGoods[];
   elapsedTime: number;
 }
 
@@ -99,8 +102,10 @@ interface SecretShopProps {}
 
 export const SecretShop = (props: SecretShopProps) => {
   const [loopTimes, setLoopTimes] = useState(10);
+  const runningRef = useRef<boolean>(false);
   const [remainDiamonds, setRemainDiamonds] = useState(0);
   const [remainGolds, setRemainGolds] = useState(0);
+  const [running, setRunning] = useState(false);
   const [buyList, setBuyList] = useState(["covenant_bookmark", "mystic_medal"]);
   const [breakList, setBreakList] = useState(["equip_epic_lv85"]);
   const [loopHistories, setLoopHistories] = useState<LoopHistory[]>([]);
@@ -116,6 +121,8 @@ export const SecretShop = (props: SecretShopProps) => {
         lastHistory.elapsedTime =
           new Date().getTime() - lastHistory.startedAt.getTime();
         setLoopHistories([...historiesRef.current]);
+        runningRef.current = false;
+        setRunning(runningRef.current);
       } else if (resp.data["bought"]) {
         const goods = resp.data["bought"];
         const lastHistory = loopHistories[loopHistories.length - 1];
@@ -157,6 +164,11 @@ export const SecretShop = (props: SecretShopProps) => {
   }, []);
 
   const handleStartLoop = () => {
+    if (running) {
+      return;
+    }
+    runningRef.current = true;
+    setRunning(runningRef.current);
     const data = {
       times: loopTimes,
       buyList,
@@ -192,15 +204,40 @@ export const SecretShop = (props: SecretShopProps) => {
     );
   };
 
-  const options = { dateStyle: "short", timeStyle: "short", hour12: false };
+  const goodsLogo = (id: string) => {
+    for (let i = 0; i < buyListData.length; i++) {
+      if (buyListData[i].value === id) {
+        return buyListData[i].image;
+      }
+    }
+    return "ma_unknown.png";
+  };
+
+  const fomratBoughtGoods = (bought: BoughtGoods[]) => {
+    // TODO key
+    const goods = bought.map((g: BoughtGoods, index: number) => (
+      <Group key={index} spacing={5} pt={3}>
+        <Avatar size={20} src={goodsLogo(g.goods)} radius={26} />
+        <Text>x {g.count}</Text>
+      </Group>
+    ));
+    return goods;
+  };
+
   const historyRows = loopHistories.map((e: LoopHistory, index: number) => (
     <tr key={index}>
-      <td>{e.startedAt.toLocaleString("zh-CN", options)}</td>
+      <td>
+        {e.startedAt.toLocaleString("zh-CN", {
+          dateStyle: "short",
+          timeStyle: "short",
+          hour12: false,
+        })}
+      </td>
       <td>
         {e.loopedTimes}/{e.loopTimes}
       </td>
       <td>{formatElaspedTime(e.elapsedTime)}</td>
-      <td>{e.boughtGoods.toString()}</td>
+      <td>{fomratBoughtGoods(e.boughtGoods)}</td>
     </tr>
   ));
 
@@ -258,20 +295,20 @@ export const SecretShop = (props: SecretShopProps) => {
             <UnstyledButton
               bg="#eee"
               onClick={handleStartLoop}
-              sx={{ border: "1px solid gray", borderRadius: "5px" }}
+              sx={{ border: "1px solid #bbb", borderRadius: "8px" }}
+              p={4}
             >
               <Group position="center">
-                <IconRecycle color="green" size={32} />
-                <div>
-                  <Text color="green">开始循环</Text>
-                  <Text size="xs" color="green">
-                    bob@handsome.inc
-                  </Text>
-                </div>
+                {running ? (
+                  <Loader size={18} />
+                ) : (
+                  <IconRecycle color="#0b0" size={18} />
+                )}
+                <Text color="green">开始循环</Text>
               </Group>
             </UnstyledButton>
-            <Table>
-              <thead>
+            <Table fontSize="xs">
+              <thead style={{ fontSize: 13, fontWeight: 500 }}>
                 <tr>
                   <td>开始时间</td>
                   {/* <td>循环次数</td> */}
@@ -285,69 +322,6 @@ export const SecretShop = (props: SecretShopProps) => {
           </Stack>
         </Card>
       </Group>
-      <Card radius={10} shadow="xl">
-        <Group noWrap align="flex-start">
-          <Stack sx={{ width: 600 }}>
-            <MultiSelect
-              value={buyList}
-              onChange={setBuyList}
-              label="刷出时自动购买:"
-              placeholder="选择你想购买的商品"
-              itemComponent={SelectItem}
-              data={buyListData}
-              nothingFound="无"
-              maxDropdownHeight={400}
-            />
-            <MultiSelect
-              value={breakList}
-              onChange={setBreakList}
-              label="刷出时停止循环:"
-              placeholder="选择你关注但不自动购买的商品"
-              itemComponent={SelectItem}
-              data={breakListData}
-              nothingFound="无"
-              maxDropdownHeight={400}
-            />
-            <NumberInput
-              label="循环次数:"
-              min={0}
-              step={10}
-              value={loopTimes}
-              onChange={setLoopTimes}
-            />
-            <NumberInput
-              label="保留金币:"
-              min={0}
-              value={remainGolds}
-              onChange={setRemainGolds}
-              rightSection={<Text color="gray">万</Text>}
-            />
-            <NumberInput
-              min={0}
-              value={remainDiamonds}
-              onChange={setRemainDiamonds}
-              label="保留钻石:"
-            />
-          </Stack>
-          <Stack sx={{ width: "100%" }}>
-            <UnstyledButton
-              bg="#eee"
-              onClick={handleStartLoop}
-              sx={{ border: "1px solid gray", borderRadius: "5px" }}
-            >
-              <Group position="center">
-                <IconRecycle color="green" size={32} />
-                <div>
-                  <Text color="green">开始循环</Text>
-                  <Text size="xs" color="green">
-                    bob@handsome.inc
-                  </Text>
-                </div>
-              </Group>
-            </UnstyledButton>
-          </Stack>
-        </Group>
-      </Card>
     </>
   );
 };
