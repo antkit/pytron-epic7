@@ -51,7 +51,7 @@ const IndexPage = () => {
               秘密商店
             </Tabs.Tab>
             <Tabs.Tab icon={<IconBorderAll color="#7bc62d" size={20} />} value="venture">
-              冒险迷宫
+              讨伐冒险
             </Tabs.Tab>
             <Tabs.Tab icon={<IconLetterG color="#7bc62d" size={20} />} value="gvg">
               公会战
@@ -64,7 +64,7 @@ const IndexPage = () => {
             </Tabs.Tab>
           </Tabs.List>
           <Tabs.Panel value="secretshop" p="xs">
-            <SecretShop buyList={["covenant_bookmark", "mystic_medal"]} />
+            <SecretShop />
           </Tabs.Panel>
           <Tabs.Panel value="venture" p="xs">
             <Venture />

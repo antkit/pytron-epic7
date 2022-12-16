@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import {
   Avatar,
   Card,
@@ -6,6 +6,7 @@ import {
   MultiSelect,
   NumberInput,
   Stack,
+  Table,
   Text,
   UnstyledButton,
 } from "@mantine/core";
@@ -76,6 +77,24 @@ const SelectItem = forwardRef<HTMLDivElement, ItemProps>(
   )
 );
 
+class Response {
+  command: string;
+  time: Date;
+  result: string;
+  data: Object;
+}
+
+class LoopHistory {
+  startedAt: Date;
+  loopTimes: number;
+  loopedTimes: number;
+  boughtGoods: {
+    goods: string;
+    count: number;
+  }[];
+  elapsedTime: number;
+}
+
 interface SecretShopProps {}
 
 export const SecretShop = (props: SecretShopProps) => {
@@ -84,10 +103,49 @@ export const SecretShop = (props: SecretShopProps) => {
   const [remainGolds, setRemainGolds] = useState(0);
   const [buyList, setBuyList] = useState(["covenant_bookmark", "mystic_medal"]);
   const [breakList, setBreakList] = useState(["equip_epic_lv85"]);
+  const [loopHistories, setLoopHistories] = useState<LoopHistory[]>([]);
+  const historiesRef = useRef<LoopHistory[]>([]);
 
   useEffect(() => {
-    const handleMessage = (_event, args) => {
-      console.log(args);
+    const handleMessage = (_event, resp: Response) => {
+      console.log(resp.result, resp.data);
+      const loopHistories = historiesRef.current;
+
+      if (resp.result === "done") {
+        const lastHistory = loopHistories[loopHistories.length - 1];
+        lastHistory.elapsedTime =
+          new Date().getTime() - lastHistory.startedAt.getTime();
+        setLoopHistories([...historiesRef.current]);
+      } else if (resp.data["bought"]) {
+        const goods = resp.data["bought"];
+        const lastHistory = loopHistories[loopHistories.length - 1];
+        let exists = false;
+        for (let i = 0; i < lastHistory.boughtGoods.length; i++) {
+          if (lastHistory.boughtGoods[i].goods === goods) {
+            lastHistory.boughtGoods[i].count += 1;
+            exists = true;
+            break;
+          }
+        }
+        if (!exists) {
+          lastHistory.boughtGoods.push({ goods, count: 1 });
+        }
+
+        switch (resp.data["bought"]) {
+          case "covenant_bookmark":
+            console.log("购买 圣约书签");
+            break;
+          case "mystic_medal":
+            console.log("购买 神秘奖牌");
+            break;
+        }
+      } else if (resp.data["looping"]) {
+        const lastHistory = loopHistories[loopHistories.length - 1];
+        lastHistory.loopedTimes += 1;
+        lastHistory.elapsedTime =
+          new Date().getTime() - lastHistory.startedAt.getTime();
+        setLoopHistories([...historiesRef.current]);
+      }
     };
 
     // add a listener to CHANNEL channel
@@ -99,76 +157,197 @@ export const SecretShop = (props: SecretShopProps) => {
   }, []);
 
   const handleStartLoop = () => {
+    const data = {
+      times: loopTimes,
+      buyList,
+      breakList,
+      remainDiamonds,
+      remainGolds,
+    };
     global.ipcRenderer.send(channelName, Commands.RunPysh, {
       filename: "game.py",
       md5: "",
-      args: ["secretshop", "" + loopTimes],
+      args: ["secretshop", JSON.stringify(data)],
     });
+
+    const newHistory: LoopHistory = {
+      startedAt: new Date(),
+      loopTimes: loopTimes,
+      loopedTimes: 0,
+      boughtGoods: [],
+      elapsedTime: 0,
+    };
+    // setLoopHistories([...loopHistories, newHistory]);
+    historiesRef.current = [...historiesRef.current, newHistory];
+    setLoopHistories([...historiesRef.current]);
   };
 
+  const formatElaspedTime = (t: number) => {
+    const unitFormat = (u: number) => (u < 10 ? "0" + u : "" + u);
+    const hours = Math.floor(t / 1000 / 3600);
+    const minutes = Math.floor(t / 1000 / 60) % 60;
+    const seconds = Math.floor(t / 1000) % 60;
+    return (
+      unitFormat(hours) + ":" + unitFormat(minutes) + ":" + unitFormat(seconds)
+    );
+  };
+
+  const options = { dateStyle: "short", timeStyle: "short", hour12: false };
+  const historyRows = loopHistories.map((e: LoopHistory, index: number) => (
+    <tr key={index}>
+      <td>{e.startedAt.toLocaleString("zh-CN", options)}</td>
+      <td>
+        {e.loopedTimes}/{e.loopTimes}
+      </td>
+      <td>{formatElaspedTime(e.elapsedTime)}</td>
+      <td>{e.boughtGoods.toString()}</td>
+    </tr>
+  ));
+
   return (
-    <Card radius={10} shadow="xl">
-      <Group noWrap>
-        <Stack sx={{ width: "100%" }}>
-          <MultiSelect
-            value={buyList}
-            onChange={setBuyList}
-            label="刷出时自动购买:"
-            placeholder="选择你想购买的商品"
-            itemComponent={SelectItem}
-            data={buyListData}
-            nothingFound="无"
-            maxDropdownHeight={400}
-          />
-          <MultiSelect
-            value={breakList}
-            onChange={setBreakList}
-            label="刷出时停止循环:"
-            placeholder="选择你关注但不自动购买的商品"
-            itemComponent={SelectItem}
-            data={breakListData}
-            nothingFound="无"
-            maxDropdownHeight={400}
-          />
-          <NumberInput
-            label="循环次数:"
-            min={0}
-            step={10}
-            value={loopTimes}
-            onChange={setLoopTimes}
-          />
-          <NumberInput
-            label="保留金币:"
-            min={0}
-            value={remainGolds}
-            onChange={setRemainGolds}
-            rightSection={<Text color="gray">万</Text>}
-          />
-          <NumberInput
-            min={0}
-            value={remainDiamonds}
-            onChange={setRemainDiamonds}
-            label="保留钻石:"
-          />
-        </Stack>
-        <Stack sx={{ width: 300 }}>
-          <UnstyledButton
-            bg="#eee"
-            onClick={handleStartLoop}
-            sx={{ border: "1px solid gray", borderRadius: "5px" }}
-          >
-            <Group position="center">
-              <IconRecycle color="green" size={32} />
-              <div>
-                <Text color="green">开始循环</Text>
-                <Text size="xs" color="green">
-                  bob@handsome.inc
-                </Text>
-              </div>
-            </Group>
-          </UnstyledButton>
-        </Stack>
+    <>
+      <Group mb={50} noWrap align="flex-start">
+        <Card radius={10} shadow="xl">
+          <Group noWrap align="flex-start">
+            <Stack sx={{ width: 600 }}>
+              <MultiSelect
+                value={buyList}
+                onChange={setBuyList}
+                label="刷出时自动购买:"
+                placeholder="选择你想购买的商品"
+                itemComponent={SelectItem}
+                data={buyListData}
+                nothingFound="无"
+                maxDropdownHeight={400}
+              />
+              <MultiSelect
+                value={breakList}
+                onChange={setBreakList}
+                label="刷出时停止循环:"
+                placeholder="选择你关注但不自动购买的商品"
+                itemComponent={SelectItem}
+                data={breakListData}
+                nothingFound="无"
+                maxDropdownHeight={400}
+              />
+              <NumberInput
+                label="循环次数:"
+                min={0}
+                step={10}
+                value={loopTimes}
+                onChange={setLoopTimes}
+              />
+              <NumberInput
+                label="保留金币:"
+                min={0}
+                value={remainGolds}
+                onChange={setRemainGolds}
+                rightSection={<Text color="gray">万</Text>}
+              />
+              <NumberInput
+                min={0}
+                value={remainDiamonds}
+                onChange={setRemainDiamonds}
+                label="保留钻石:"
+              />
+            </Stack>
+          </Group>
+        </Card>
+        <Card radius={10} shadow="xl" sx={{ width: "100%" }}>
+          <Stack sx={{ width: "100%" }}>
+            <UnstyledButton
+              bg="#eee"
+              onClick={handleStartLoop}
+              sx={{ border: "1px solid gray", borderRadius: "5px" }}
+            >
+              <Group position="center">
+                <IconRecycle color="green" size={32} />
+                <div>
+                  <Text color="green">开始循环</Text>
+                  <Text size="xs" color="green">
+                    bob@handsome.inc
+                  </Text>
+                </div>
+              </Group>
+            </UnstyledButton>
+            <Table>
+              <thead>
+                <tr>
+                  <td>开始时间</td>
+                  {/* <td>循环次数</td> */}
+                  <td>刷新次数</td>
+                  <td>用时</td>
+                  <td>购买商品</td>
+                </tr>
+              </thead>
+              <tbody>{historyRows}</tbody>
+            </Table>
+          </Stack>
+        </Card>
       </Group>
-    </Card>
+      <Card radius={10} shadow="xl">
+        <Group noWrap align="flex-start">
+          <Stack sx={{ width: 600 }}>
+            <MultiSelect
+              value={buyList}
+              onChange={setBuyList}
+              label="刷出时自动购买:"
+              placeholder="选择你想购买的商品"
+              itemComponent={SelectItem}
+              data={buyListData}
+              nothingFound="无"
+              maxDropdownHeight={400}
+            />
+            <MultiSelect
+              value={breakList}
+              onChange={setBreakList}
+              label="刷出时停止循环:"
+              placeholder="选择你关注但不自动购买的商品"
+              itemComponent={SelectItem}
+              data={breakListData}
+              nothingFound="无"
+              maxDropdownHeight={400}
+            />
+            <NumberInput
+              label="循环次数:"
+              min={0}
+              step={10}
+              value={loopTimes}
+              onChange={setLoopTimes}
+            />
+            <NumberInput
+              label="保留金币:"
+              min={0}
+              value={remainGolds}
+              onChange={setRemainGolds}
+              rightSection={<Text color="gray">万</Text>}
+            />
+            <NumberInput
+              min={0}
+              value={remainDiamonds}
+              onChange={setRemainDiamonds}
+              label="保留钻石:"
+            />
+          </Stack>
+          <Stack sx={{ width: "100%" }}>
+            <UnstyledButton
+              bg="#eee"
+              onClick={handleStartLoop}
+              sx={{ border: "1px solid gray", borderRadius: "5px" }}
+            >
+              <Group position="center">
+                <IconRecycle color="green" size={32} />
+                <div>
+                  <Text color="green">开始循环</Text>
+                  <Text size="xs" color="green">
+                    bob@handsome.inc
+                  </Text>
+                </div>
+              </Group>
+            </UnstyledButton>
+          </Stack>
+        </Group>
+      </Card>
+    </>
   );
 };

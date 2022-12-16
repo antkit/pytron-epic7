@@ -86,7 +86,7 @@ function reply(
     command,
     time: new Date(),
     result,
-    data,
+    data: data ? data : {},
   };
   event.sender.send(channel, message);
 }
@@ -236,7 +236,7 @@ function run(cmd: Commands, event: IpcMainEvent, props: RunProps) {
       if (typeof j !== "object") {
         return;
       }
-      console.log("json:", j);
+      // console.log("json:", j);
       reply(event, channelName, Commands.RunPysh, Status.Info, j);
     } catch {
       // ignore unprocessable messages
