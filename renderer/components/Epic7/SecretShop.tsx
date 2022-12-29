@@ -90,7 +90,7 @@ class BoughtGoods {
   count: number;
 }
 
-class LoopHistory {
+class LoopRecord {
   startedAt: Date;
   loopTimes: number;
   loopedTimes: number;
@@ -108,34 +108,34 @@ export const SecretShop = (props: SecretShopProps) => {
   const [running, setRunning] = useState(false);
   const [buyList, setBuyList] = useState(["covenant_bookmark", "mystic_medal"]);
   const [breakList, setBreakList] = useState(["equip_epic_lv85"]);
-  const [loopHistories, setLoopHistories] = useState<LoopHistory[]>([]);
-  const historiesRef = useRef<LoopHistory[]>([]);
+  const [loopRecords, setLoopRecords] = useState<LoopRecord[]>([]);
+  const recordsRef = useRef<LoopRecord[]>([]);
 
   useEffect(() => {
     const handleMessage = (_event, resp: Response) => {
       console.log(resp.result, resp.data);
-      const loopHistories = historiesRef.current;
+      const records = recordsRef.current;
 
       if (resp.result === "done") {
-        const lastHistory = loopHistories[loopHistories.length - 1];
-        lastHistory.elapsedTime =
-          new Date().getTime() - lastHistory.startedAt.getTime();
-        setLoopHistories([...historiesRef.current]);
+        const lastRecord = records[records.length - 1];
+        lastRecord.elapsedTime =
+          new Date().getTime() - lastRecord.startedAt.getTime();
+        setLoopRecords([...recordsRef.current]);
         runningRef.current = false;
         setRunning(runningRef.current);
       } else if (resp.data["bought"]) {
         const goods = resp.data["bought"];
-        const lastHistory = loopHistories[loopHistories.length - 1];
+        const lastRecord = records[records.length - 1];
         let exists = false;
-        for (let i = 0; i < lastHistory.boughtGoods.length; i++) {
-          if (lastHistory.boughtGoods[i].goods === goods) {
-            lastHistory.boughtGoods[i].count += 1;
+        for (let i = 0; i < lastRecord.boughtGoods.length; i++) {
+          if (lastRecord.boughtGoods[i].goods === goods) {
+            lastRecord.boughtGoods[i].count += 1;
             exists = true;
             break;
           }
         }
         if (!exists) {
-          lastHistory.boughtGoods.push({ goods, count: 1 });
+          lastRecord.boughtGoods.push({ goods, count: 1 });
         }
 
         switch (resp.data["bought"]) {
@@ -147,11 +147,11 @@ export const SecretShop = (props: SecretShopProps) => {
             break;
         }
       } else if (resp.data["looping"]) {
-        const lastHistory = loopHistories[loopHistories.length - 1];
-        lastHistory.loopedTimes += 1;
-        lastHistory.elapsedTime =
-          new Date().getTime() - lastHistory.startedAt.getTime();
-        setLoopHistories([...historiesRef.current]);
+        const lastRecord = records[records.length - 1];
+        lastRecord.loopedTimes += 1;
+        lastRecord.elapsedTime =
+          new Date().getTime() - lastRecord.startedAt.getTime();
+        setLoopRecords([...recordsRef.current]);
       }
     };
 
@@ -178,20 +178,20 @@ export const SecretShop = (props: SecretShopProps) => {
     };
     global.ipcRenderer.send(channelName, Commands.RunPysh, {
       filename: "game.py",
-      md5: "",
+      checksum: "11d8e316ebcef8247f3a0965b6a859987b0e3911633412b72d5bda4dca73fed6",
       args: ["secretshop", JSON.stringify(data)],
     });
 
-    const newHistory: LoopHistory = {
+    const newRecord: LoopRecord = {
       startedAt: new Date(),
       loopTimes: loopTimes,
       loopedTimes: 0,
       boughtGoods: [],
       elapsedTime: 0,
     };
-    // setLoopHistories([...loopHistories, newHistory]);
-    historiesRef.current = [...historiesRef.current, newHistory];
-    setLoopHistories([...historiesRef.current]);
+    // setLoopHistories([...loopHistories, newRecord]);
+    recordsRef.current = [...recordsRef.current, newRecord];
+    setLoopRecords([...recordsRef.current]);
   };
 
   const formatElaspedTime = (t: number) => {
@@ -224,7 +224,7 @@ export const SecretShop = (props: SecretShopProps) => {
     return goods;
   };
 
-  const historyRows = loopHistories.map((e: LoopHistory, index: number) => (
+  const recordRows = loopRecords.map((e: LoopRecord, index: number) => (
     <tr key={index}>
       <td>
         {e.startedAt.toLocaleString("zh-CN", {
@@ -317,7 +317,7 @@ export const SecretShop = (props: SecretShopProps) => {
                   <td>购买商品</td>
                 </tr>
               </thead>
-              <tbody>{historyRows}</tbody>
+              <tbody>{recordRows}</tbody>
             </Table>
           </Stack>
         </Card>

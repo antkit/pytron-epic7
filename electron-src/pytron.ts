@@ -197,8 +197,8 @@ function remove(event: IpcMainEvent) {
 }
 
 class RunProps {
-  filename: string = "";
-  md5: string = "";
+  filename: string = ""; // local file system
+  checksum: string = "";
   args: string[] | undefined;
 }
 
@@ -209,9 +209,46 @@ function killGlobalRunner() {
   }
 }
 
-function run(cmd: Commands, event: IpcMainEvent, props: RunProps) {
-  // TODO check hash, and break if mismatch
+const crypto = require("crypto");
+function getChecksum(path: string) {
+  return new Promise((resolve, reject) => {
+    // if absolutely necessary, use md5
+    const hash = crypto.createHash("sha256");
+    const input = fs.createReadStream(path);
+    input.on("error", reject);
+    input.on("data", (chunk) => {
+      hash.update(chunk);
+    });
+    input.on("close", () => {
+      resolve(hash.digest("hex"));
+    });
+  });
+}
 
+function run(cmd: Commands, event: IpcMainEvent, props: RunProps) {
+  const fullpath = path.join(dRoot, props.filename);
+  if (!fs.existsSync(fullpath)) {
+    // just make it simple enough
+    reply(event, channelName, cmd, Status.Error, "not exists");
+    return;
+  }
+
+  getChecksum(fullpath)
+    .then((checksum) => {
+      if (checksum !== props.checksum) {
+        // just make it simple enough
+        reply(event, channelName, cmd, Status.Error, "checksum error");
+        return;
+      }
+      doRun(cmd, event, props);
+    })
+    .catch((rejected) => {
+      console.log("checksum rejected:", rejected);
+      reply(event, channelName, cmd, Status.Error, "checksum error");
+    });
+}
+
+function doRun(cmd: Commands, event: IpcMainEvent, props: RunProps) {
   if (cmd === Commands.RunPysh) {
     const options: Options = {
       mode: "text",
@@ -236,7 +273,6 @@ function run(cmd: Commands, event: IpcMainEvent, props: RunProps) {
       if (typeof j !== "object") {
         return;
       }
-      // console.log("json:", j);
       reply(event, channelName, Commands.RunPysh, Status.Info, j);
     } catch {
       // ignore unprocessable messages
@@ -247,7 +283,7 @@ function run(cmd: Commands, event: IpcMainEvent, props: RunProps) {
     // end the input stream and allow the process to exit
     (ps as PythonShell).end(function (err, code, signal) {
       if (err) {
-        console.log("err: " + err.message)
+        console.log("err: " + err.message);
         // reply(event, channelName, cmd, Status.Error, err);
       } else {
         console.log("The exit code was: " + code);
@@ -259,9 +295,7 @@ function run(cmd: Commands, event: IpcMainEvent, props: RunProps) {
   } else {
     ps.stdout?.on("data", messageCallback);
     // ps.on("error", (err: Error) => {
-    //   console.log("error", err.message);
-    //   reply(event, channelName, cmd, Status.Error, err.message);
-    //   killGlobalRunner();
+    //   multiple times reach here
     // });
     ps.on("exit", () => {
       reply(event, channelName, cmd, Status.Done);
@@ -314,7 +348,7 @@ function writeConfig(event: IpcMainEvent) {
 
 class DownloadProps {
   url: string = "";
-  md5: string = "";
+  checksum: string = "";
   type: string = "code"; // code | resource
 }
 
@@ -329,10 +363,6 @@ function download(event: IpcMainEvent, props: DownloadProps) {
   }
 
   const filepath = path.join(dRoot, pnames[pnames.length - 1]);
-  if (props.md5.length > 0 && fs.existsSync(filepath)) {
-    // TODO check md5, only download if md5 mismatch
-  }
-
   const file = fs.createWriteStream(filepath);
   const request = url.protocol === "http:" ? http.get(url) : https.get(url);
   request.on("response", (resp: http.IncomingMessage) => {
