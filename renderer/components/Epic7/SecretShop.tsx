@@ -178,7 +178,7 @@ export const SecretShop = (props: SecretShopProps) => {
     };
     global.ipcRenderer.send(channelName, Commands.RunPysh, {
       filename: "game.py",
-      checksum: "11d8e316ebcef8247f3a0965b6a859987b0e3911633412b72d5bda4dca73fed6",
+      checksum: "8226caf0fe570f4ec0d6d12830ec00cfe4eceff216eb2df022aac2f4ee2dd4ed",
       args: ["secretshop", JSON.stringify(data)],
     });
 

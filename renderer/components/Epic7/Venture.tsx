@@ -75,10 +75,18 @@ export const Venture = (props: VentureProps) => {
   ];
 
   const handleStartLoop = () => {
+    const data = {
+      times: loopTimes,
+      episode: 0,
+      chapter: 0,
+      mission: 0,
+      useLeif: true,
+      useDiamond: false,
+    };
     global.ipcRenderer.send(channelName, Commands.RunPysh, {
       filename: "game.py",
-      md5: "",
-      args: ["secretshop", "" + loopTimes],
+      checksum: "8226caf0fe570f4ec0d6d12830ec00cfe4eceff216eb2df022aac2f4ee2dd4ed",
+      args: ["venture", JSON.stringify(data)],
     });
   };
 
