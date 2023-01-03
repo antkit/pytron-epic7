@@ -113,6 +113,10 @@ export const SecretShop = (props: SecretShopProps) => {
 
   useEffect(() => {
     const handleMessage = (_event, resp: Response) => {
+      if (!running) {
+        return;
+      }
+
       console.log(resp.result, resp.data);
       const records = recordsRef.current;
 
@@ -178,7 +182,8 @@ export const SecretShop = (props: SecretShopProps) => {
     };
     global.ipcRenderer.send(channelName, Commands.RunPysh, {
       filename: "game.py",
-      checksum: "8226caf0fe570f4ec0d6d12830ec00cfe4eceff216eb2df022aac2f4ee2dd4ed",
+      checksum:
+        "2f4045e598ac5d329465566f8c1e787e80c1fbee2bdeb9cffd8e5fba1b1c80b6",
       args: ["secretshop", JSON.stringify(data)],
     });
 

@@ -1,8 +1,9 @@
-import { forwardRef, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import {
   Avatar,
   Card,
   Group,
+  Loader,
   MultiSelect,
   NumberInput,
   Select,
@@ -62,11 +63,62 @@ const SelectItem = forwardRef<HTMLDivElement, ItemProps>(
   )
 );
 
+class Response {
+  command: string;
+  time: Date;
+  result: string;
+  data: Object;
+}
+
+class LoopRecord {
+  startedAt: Date;
+  loopTimes: number;
+  loopedTimes: number;
+  elapsedTime: number;
+}
+
 interface VentureProps {}
 
 export const Venture = (props: VentureProps) => {
+  const runningRef = useRef<boolean>(false);
+  const [running, setRunning] = useState(false);
   const [ventureOptions, setVentureOptions] = useState(["leif"]);
   const [loopTimes, setLoopTimes] = useState(10);
+  const [loopRecords, setLoopRecords] = useState<LoopRecord[]>([]);
+  const recordsRef = useRef<LoopRecord[]>([]);
+
+  useEffect(() => {
+    const handleMessage = (_event, resp: Response) => {
+      if (!running) {
+        return;
+      }
+
+      console.log(resp.result, resp.data);
+      const records = recordsRef.current;
+
+      if (resp.result === "done") {
+        const lastRecord = records[records.length - 1];
+        lastRecord.elapsedTime =
+          new Date().getTime() - lastRecord.startedAt.getTime();
+        setLoopRecords([...recordsRef.current]);
+        runningRef.current = false;
+        setRunning(runningRef.current);
+      } else if (resp.data["looping"]) {
+        const lastRecord = records[records.length - 1];
+        lastRecord.loopedTimes += 1;
+        lastRecord.elapsedTime =
+          new Date().getTime() - lastRecord.startedAt.getTime();
+        setLoopRecords([...recordsRef.current]);
+      }
+    };
+
+    // add a listener to CHANNEL channel
+    global.ipcRenderer.addListener(channelName, handleMessage);
+
+    return () => {
+      global.ipcRenderer.removeListener(channelName, handleMessage);
+    };
+  }, []);
 
   const missions = [
     { value: "current", label: "当前关卡" },
@@ -75,6 +127,11 @@ export const Venture = (props: VentureProps) => {
   ];
 
   const handleStartLoop = () => {
+    if (running) {
+      return;
+    }
+    runningRef.current = true;
+    setRunning(runningRef.current);
     const data = {
       times: loopTimes,
       episode: 0,
@@ -85,7 +142,7 @@ export const Venture = (props: VentureProps) => {
     };
     global.ipcRenderer.send(channelName, Commands.RunPysh, {
       filename: "game.py",
-      checksum: "8226caf0fe570f4ec0d6d12830ec00cfe4eceff216eb2df022aac2f4ee2dd4ed",
+      checksum: "2f4045e598ac5d329465566f8c1e787e80c1fbee2bdeb9cffd8e5fba1b1c80b6",
       args: ["venture", JSON.stringify(data)],
     });
   };
@@ -93,42 +150,42 @@ export const Venture = (props: VentureProps) => {
   return (
     <>
       <Card radius={10} shadow="xl">
+        <Stack sx={{ width: "100%" }}>
           <UnstyledButton
             bg="#eee"
             onClick={handleStartLoop}
-            sx={{ border: "1px solid gray", borderRadius: "5px" }}
+            sx={{ border: "1px solid #bbb", borderRadius: "8px" }}
+            p={4}
           >
             <Group position="center">
-              <IconRecycle color="green" size={32} />
-              <div>
-                <Text color="green">开始循环</Text>
-                <Text size="xs" color="green">
-                  bob@handsome.inc
-                </Text>
-              </div>
+              {running ? (
+                <Loader size={18} />
+              ) : (
+                <IconRecycle color="#0b0" size={18} />
+              )}
+              <Text color="green">开始循环</Text>
             </Group>
           </UnstyledButton>
+          <Select label="选择关卡:" defaultValue="current" data={missions} />
+          <MultiSelect
+            value={ventureOptions}
+            onChange={setVentureOptions}
+            label="冒险选项:"
+            placeholder="定义冒险行为"
+            itemComponent={SelectItem}
+            data={ventureData}
+            nothingFound="无"
+            maxDropdownHeight={400}
+          />
+          <NumberInput
+            label="循环次数:"
+            min={0}
+            step={10}
+            value={loopTimes}
+            onChange={setLoopTimes}
+          />
+        </Stack>
       </Card>
-      <Stack>
-        <Select label="选择关卡:" defaultValue="current" data={missions} />
-        <MultiSelect
-          value={ventureOptions}
-          onChange={setVentureOptions}
-          label="冒险选项:"
-          placeholder="定义冒险行为"
-          itemComponent={SelectItem}
-          data={ventureData}
-          nothingFound="无"
-          maxDropdownHeight={400}
-        />
-        <NumberInput
-          label="循环次数:"
-          min={0}
-          step={10}
-          value={loopTimes}
-          onChange={setLoopTimes}
-        />
-      </Stack>
     </>
   );
 };
