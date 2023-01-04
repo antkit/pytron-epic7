@@ -12,6 +12,7 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import { IconRecycle } from "@tabler/icons";
+import { CHECKSUM_GAME } from "../../utils";
 
 const channelName = "pytron";
 
@@ -102,10 +103,10 @@ interface SecretShopProps {}
 
 export const SecretShop = (props: SecretShopProps) => {
   const [loopTimes, setLoopTimes] = useState(10);
+  const [running, setRunning] = useState(false);
   const runningRef = useRef<boolean>(false);
   const [remainDiamonds, setRemainDiamonds] = useState(0);
   const [remainGolds, setRemainGolds] = useState(0);
-  const [running, setRunning] = useState(false);
   const [buyList, setBuyList] = useState(["covenant_bookmark", "mystic_medal"]);
   const [breakList, setBreakList] = useState(["equip_epic_lv85"]);
   const [loopRecords, setLoopRecords] = useState<LoopRecord[]>([]);
@@ -159,7 +160,7 @@ export const SecretShop = (props: SecretShopProps) => {
       }
     };
 
-    // add a listener to CHANNEL channel
+    // add a listener to channel
     global.ipcRenderer.addListener(channelName, handleMessage);
 
     return () => {
@@ -182,8 +183,7 @@ export const SecretShop = (props: SecretShopProps) => {
     };
     global.ipcRenderer.send(channelName, Commands.RunPysh, {
       filename: "game.py",
-      checksum:
-        "2f4045e598ac5d329465566f8c1e787e80c1fbee2bdeb9cffd8e5fba1b1c80b6",
+      checksum: CHECKSUM_GAME,
       args: ["secretshop", JSON.stringify(data)],
     });
 
@@ -249,7 +249,7 @@ export const SecretShop = (props: SecretShopProps) => {
   return (
     <>
       <Group mb={50} noWrap align="flex-start">
-        <Card radius={10} shadow="xl">
+        <Card radius={10} shadow="xl" mt="xs" withBorder>
           <Group noWrap align="flex-start">
             <Stack sx={{ width: 600 }}>
               <MultiSelect
@@ -295,7 +295,7 @@ export const SecretShop = (props: SecretShopProps) => {
             </Stack>
           </Group>
         </Card>
-        <Card radius={10} shadow="xl" sx={{ width: "100%" }}>
+        <Card radius={10} shadow="xl" sx={{ width: "100%" }} mt="xs" withBorder>
           <Stack sx={{ width: "100%" }}>
             <UnstyledButton
               bg="#eee"

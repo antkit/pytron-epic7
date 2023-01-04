@@ -1,0 +1,2 @@
+export const CHECKSUM_GAME =
+  "bbc598d448f647c7c7f40dfafaae398a4533962281e77cc45020a153947cd090";

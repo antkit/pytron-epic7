@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import { Tabs } from "@mantine/core";
-import { SecretShop, Venture } from "../components/Epic7";
+import { EquipEvaluate, Gvg, Pvp, SecretShop, Venture } from "../components/Epic7";
 import { IconAxe, IconBorderAll, IconLetterG, IconLetterP, IconScale } from "@tabler/icons";
 
 enum Commands {
@@ -53,14 +53,14 @@ const IndexPage = () => {
             <Tabs.Tab icon={<IconBorderAll color="#7bc62d" size={20} />} value="venture">
               讨伐冒险
             </Tabs.Tab>
+            <Tabs.Tab icon={<IconAxe color="#7bc62d" size={20} />} value="equipstat">
+              装备评分
+            </Tabs.Tab>
             <Tabs.Tab icon={<IconLetterG color="#7bc62d" size={20} />} value="gvg">
               公会战
             </Tabs.Tab>
             <Tabs.Tab icon={<IconLetterP color="#7bc62d" size={20} />} value="pvp">
               竞技场
-            </Tabs.Tab>
-            <Tabs.Tab icon={<IconAxe color="#7bc62d" size={20} />} value="equipstat">
-              装备评分
             </Tabs.Tab>
           </Tabs.List>
           <Tabs.Panel value="secretshop" p="xs">
@@ -70,13 +70,14 @@ const IndexPage = () => {
             <Venture />
           </Tabs.Panel>
           <Tabs.Panel value="gvg" p="xs">
-            <Venture />
+            <Gvg />
           </Tabs.Panel>
           <Tabs.Panel value="pvp" p="xs">
-            <Venture />
+            <Pvp />
           </Tabs.Panel>
           <Tabs.Panel value="equipstat" p="xs">
-            <Venture />
+            {/* <EquipStat /> */}
+            <EquipEvaluate />
           </Tabs.Panel>
         </Tabs>
       {/* </Container> */}

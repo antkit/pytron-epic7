@@ -4,9 +4,6 @@ import {
   Card,
   Group,
   Loader,
-  MultiSelect,
-  NumberInput,
-  Select,
   Stack,
   Table,
   Text,
@@ -28,43 +25,6 @@ enum Commands {
   RunBin = "runBin", // 运行可执行文件
 }
 
-const ventureData = [
-  {
-    image: "leif.png",
-    label: "使用叶子",
-    value: "leif",
-    description: "自动使用叶子补充行动力",
-  },
-  {
-    image: "diamond.png",
-    label: "使用钻石",
-    value: "diamond",
-    description: "自动使用钻石补充行动力,如果同时选择了叶子,则叶子优先",
-  },
-];
-
-interface ItemProps extends React.ComponentPropsWithoutRef<"div"> {
-  image: string;
-  label: string;
-  description: string;
-}
-const SelectItem = forwardRef<HTMLDivElement, ItemProps>(
-  ({ image, label, description, ...others }: ItemProps, ref) => (
-    <div ref={ref} {...others}>
-      <Group noWrap>
-        <Avatar src={image} />
-
-        <div>
-          <Text>{label}</Text>
-          <Text size="xs" color="dimmed">
-            {description}
-          </Text>
-        </div>
-      </Group>
-    </div>
-  )
-);
-
 class Response {
   command: string;
   time: Date;
@@ -84,12 +44,11 @@ class LoopRecord {
   elapsedTime: number;
 }
 
-interface VentureProps {}
+interface EquipStatProps {}
 
-export const Venture = (props: VentureProps) => {
+export const EquipStat = (props: EquipStatProps) => {
   const runningRef = useRef<boolean>(false);
   const [running, setRunning] = useState(false);
-  const [ventureOptions, setVentureOptions] = useState(["leif"]);
   const [loopTimes, setLoopTimes] = useState(10);
   const [loopRecords, setLoopRecords] = useState<LoopRecord[]>([]);
   const recordsRef = useRef<LoopRecord[]>([]);
@@ -126,12 +85,6 @@ export const Venture = (props: VentureProps) => {
       global.ipcRenderer.removeListener(channelName, handleMessage);
     };
   }, []);
-
-  const missions = [
-    { value: "current", label: "当前关卡" },
-    { value: "ep1-9-4", label: "第一章 9-4" },
-    { value: "ep1-9-7", label: "第一章 9-7" },
-  ];
 
   const handleStartLoop = () => {
     if (running) {
@@ -184,35 +137,19 @@ export const Venture = (props: VentureProps) => {
   return (
     <>
       <Group mb={50} noWrap align="flex-start">
-        <Card radius={10} shadow="xl" mt="xs" withBorder>
+        <Card radius={10} shadow="xl">
           <Group noWrap align="flex-start">
             <Stack sx={{ width: 600 }}>
-              <Select
-                label="选择关卡:"
-                defaultValue="current"
-                data={missions}
-              />
-              <MultiSelect
-                value={ventureOptions}
-                onChange={setVentureOptions}
-                label="冒险选项:"
-                placeholder="定义冒险行为"
-                itemComponent={SelectItem}
-                data={ventureData}
-                nothingFound="无"
-                maxDropdownHeight={400}
-              />
-              <NumberInput
-                label="循环次数:"
-                min={0}
-                step={10}
-                value={loopTimes}
-                onChange={setLoopTimes}
-              />
+              <ul>
+                <li>速度: 2分/点</li>
+                <li>暴击: 1.5分/点</li>
+                <li>爆伤: 1.1分/点</li>
+                <li>其他: 1分/点</li>
+              </ul>
             </Stack>
           </Group>
         </Card>
-        <Card radius={10} shadow="xl" sx={{ width: "100%" }} mt="xs" withBorder>
+        <Card radius={10} shadow="xl" sx={{ width: "100%" }}>
           <Stack sx={{ width: "100%" }}>
             <UnstyledButton
               bg="#eee"
@@ -226,7 +163,7 @@ export const Venture = (props: VentureProps) => {
                 ) : (
                   <IconRecycle color="#0b0" size={18} />
                 )}
-                <Text color="green">开始循环</Text>
+                <Text color="green">开始评估</Text>
               </Group>
             </UnstyledButton>
             <Table fontSize="xs">

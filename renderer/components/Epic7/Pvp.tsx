@@ -84,9 +84,9 @@ class LoopRecord {
   elapsedTime: number;
 }
 
-interface VentureProps {}
+interface PvpProps {}
 
-export const Venture = (props: VentureProps) => {
+export const Pvp = (props: PvpProps) => {
   const runningRef = useRef<boolean>(false);
   const [running, setRunning] = useState(false);
   const [ventureOptions, setVentureOptions] = useState(["leif"]);
@@ -186,61 +186,8 @@ export const Venture = (props: VentureProps) => {
       <Group mb={50} noWrap align="flex-start">
         <Card radius={10} shadow="xl" mt="xs" withBorder>
           <Group noWrap align="flex-start">
-            <Stack sx={{ width: 600 }}>
-              <Select
-                label="选择关卡:"
-                defaultValue="current"
-                data={missions}
-              />
-              <MultiSelect
-                value={ventureOptions}
-                onChange={setVentureOptions}
-                label="冒险选项:"
-                placeholder="定义冒险行为"
-                itemComponent={SelectItem}
-                data={ventureData}
-                nothingFound="无"
-                maxDropdownHeight={400}
-              />
-              <NumberInput
-                label="循环次数:"
-                min={0}
-                step={10}
-                value={loopTimes}
-                onChange={setLoopTimes}
-              />
-            </Stack>
+            待施工
           </Group>
-        </Card>
-        <Card radius={10} shadow="xl" sx={{ width: "100%" }} mt="xs" withBorder>
-          <Stack sx={{ width: "100%" }}>
-            <UnstyledButton
-              bg="#eee"
-              onClick={handleStartLoop}
-              sx={{ border: "1px solid #bbb", borderRadius: "8px" }}
-              p={4}
-            >
-              <Group position="center">
-                {running ? (
-                  <Loader size={18} />
-                ) : (
-                  <IconRecycle color="#0b0" size={18} />
-                )}
-                <Text color="green">开始循环</Text>
-              </Group>
-            </UnstyledButton>
-            <Table fontSize="xs">
-              <thead style={{ fontSize: 13, fontWeight: 500 }}>
-                <tr>
-                  <td>战斗序号</td>
-                  <td>开始时间</td>
-                  <td>战斗耗时</td>
-                  <td>战斗结果</td>
-                </tr>
-              </thead>
-              <tbody>{recordRows}</tbody>
-            </Table>
-          </Stack>
         </Card>
       </Group>
     </>
