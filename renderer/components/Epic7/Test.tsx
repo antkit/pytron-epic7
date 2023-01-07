@@ -28,19 +28,19 @@ const channelName = "pytron";
 export const Test = () => {
   const [loopTimes, setLoopTimes] = useState(10);
 
-  useEffect(() => {
-    const handleMessage = (_event, args) => {
-      console.log(args);
-      // alert(args);
-    };
+  // useEffect(() => {
+  //   const handleMessage = (_event, args) => {
+  //     console.log(args);
+  //     // alert(args);
+  //   };
 
-    // add a listener to CHANNEL channel
-    global.ipcRenderer.addListener(channelName, handleMessage);
+  //   // add a listener to CHANNEL channel
+  //   global.ipcRenderer.addListener(channelName, handleMessage);
 
-    return () => {
-      global.ipcRenderer.removeListener(channelName, handleMessage);
-    };
-  }, []);
+  //   return () => {
+  //     global.ipcRenderer.removeListener(channelName, handleMessage);
+  //   };
+  // }, []);
 
   const onSayHiClick = () => {
     global.ipcRenderer.send(channelName, Commands.ReadConfig);

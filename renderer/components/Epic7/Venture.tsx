@@ -12,7 +12,13 @@ import {
   Text,
   UnstyledButton,
 } from "@mantine/core";
-import { IconRecycle } from "@tabler/icons";
+import {
+  IconCheck,
+  IconCircleCheck,
+  IconCircleDashed,
+  IconCircleX,
+  IconRecycle,
+} from "@tabler/icons";
 import { CHECKSUM_GAME } from "../../utils";
 
 const channelName = "pytron";
@@ -73,7 +79,7 @@ class Response {
 }
 
 class VentureResult {
-  succeed: boolean;
+  status: "cleared" | "failed" | "running" | "unknown";
 }
 
 class LoopRecord {
@@ -87,45 +93,55 @@ class LoopRecord {
 interface VentureProps {}
 
 export const Venture = (props: VentureProps) => {
-  const runningRef = useRef<boolean>(false);
   const [running, setRunning] = useState(false);
   const [ventureOptions, setVentureOptions] = useState(["leif"]);
   const [loopTimes, setLoopTimes] = useState(10);
   const [loopRecords, setLoopRecords] = useState<LoopRecord[]>([]);
-  const recordsRef = useRef<LoopRecord[]>([]);
+
+  const handleMessage = (_event, resp: Response) => {
+    console.log("handleMessage venture", resp);
+    if (!running) {
+      return;
+    }
+
+    console.log(resp.result, resp.data);
+    const records = loopRecords;
+
+    if (resp.result === "done") {
+      const lastRecord = records[records.length - 1];
+      if (!lastRecord.venture.status) {
+        lastRecord.venture.status = "unknown";
+      }
+      lastRecord.elapsedTime =
+        new Date().getTime() - lastRecord.startedAt.getTime();
+      setLoopRecords([...records]);
+      setRunning(false);
+    } else if (resp.data["result"]) {
+      const lastRecord = records[records.length - 1];
+      lastRecord.venture.status = resp.data["result"];
+      lastRecord.elapsedTime =
+        new Date().getTime() - lastRecord.startedAt.getTime();
+      setLoopRecords([...records]);
+    } else if (resp.data["looping"]) {
+      const newRecord: LoopRecord = {
+        startedAt: new Date(),
+        loopTimes: loopTimes,
+        loopedTimes: 0,
+        venture: { status: "running" },
+        elapsedTime: 0,
+      };
+      setLoopRecords([...records, newRecord]);
+    }
+  };
 
   useEffect(() => {
-    const handleMessage = (_event, resp: Response) => {
-      if (!running) {
-        return;
-      }
-
-      console.log(resp.result, resp.data);
-      const records = recordsRef.current;
-
-      if (resp.result === "done") {
-        const lastRecord = records[records.length - 1];
-        lastRecord.elapsedTime =
-          new Date().getTime() - lastRecord.startedAt.getTime();
-        setLoopRecords([...recordsRef.current]);
-        runningRef.current = false;
-        setRunning(runningRef.current);
-      } else if (resp.data["looping"]) {
-        const lastRecord = records[records.length - 1];
-        lastRecord.loopedTimes += 1;
-        lastRecord.elapsedTime =
-          new Date().getTime() - lastRecord.startedAt.getTime();
-        setLoopRecords([...recordsRef.current]);
-      }
-    };
-
     // add a listener to CHANNEL channel
     global.ipcRenderer.addListener(channelName, handleMessage);
 
     return () => {
       global.ipcRenderer.removeListener(channelName, handleMessage);
     };
-  }, []);
+  }, [running, loopRecords]);
 
   const missions = [
     { value: "current", label: "当前关卡" },
@@ -137,8 +153,7 @@ export const Venture = (props: VentureProps) => {
     if (running) {
       return;
     }
-    runningRef.current = true;
-    setRunning(runningRef.current);
+    setRunning(true);
     const data = {
       times: loopTimes,
       episode: 0,
@@ -164,6 +179,20 @@ export const Venture = (props: VentureProps) => {
     );
   };
 
+  const fomratVentureResult = (st: string) => {
+    const size = 14;
+    if (st === "cleared") {
+      return <IconCircleCheck color="green" size={size} />;
+    }
+    if (st === "failed") {
+      return <IconCircleX color="red" size={size} />;
+    }
+    if (st === "running") {
+      return <Loader color="blue" size={size} />;
+    }
+    return <IconCircleDashed color="blue" size={size} />;
+  };
+
   const recordRows = loopRecords.map((e: LoopRecord, index: number) => (
     <tr key={index}>
       <td>
@@ -177,7 +206,7 @@ export const Venture = (props: VentureProps) => {
         {e.loopedTimes}/{e.loopTimes}
       </td>
       <td>{formatElaspedTime(e.elapsedTime)}</td>
-      <td></td>
+      <td>{fomratVentureResult(e.venture.status)}</td>
     </tr>
   ));
 

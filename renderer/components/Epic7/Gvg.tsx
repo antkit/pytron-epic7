@@ -94,38 +94,38 @@ export const Gvg = (props: GvgProps) => {
   const [loopRecords, setLoopRecords] = useState<LoopRecord[]>([]);
   const recordsRef = useRef<LoopRecord[]>([]);
 
-  useEffect(() => {
-    const handleMessage = (_event, resp: Response) => {
-      if (!running) {
-        return;
-      }
+  // useEffect(() => {
+  //   const handleMessage = (_event, resp: Response) => {
+  //     if (!running) {
+  //       return;
+  //     }
 
-      console.log(resp.result, resp.data);
-      const records = recordsRef.current;
+  //     console.log(resp.result, resp.data);
+  //     const records = recordsRef.current;
 
-      if (resp.result === "done") {
-        const lastRecord = records[records.length - 1];
-        lastRecord.elapsedTime =
-          new Date().getTime() - lastRecord.startedAt.getTime();
-        setLoopRecords([...recordsRef.current]);
-        runningRef.current = false;
-        setRunning(runningRef.current);
-      } else if (resp.data["looping"]) {
-        const lastRecord = records[records.length - 1];
-        lastRecord.loopedTimes += 1;
-        lastRecord.elapsedTime =
-          new Date().getTime() - lastRecord.startedAt.getTime();
-        setLoopRecords([...recordsRef.current]);
-      }
-    };
+  //     if (resp.result === "done") {
+  //       const lastRecord = records[records.length - 1];
+  //       lastRecord.elapsedTime =
+  //         new Date().getTime() - lastRecord.startedAt.getTime();
+  //       setLoopRecords([...recordsRef.current]);
+  //       runningRef.current = false;
+  //       setRunning(runningRef.current);
+  //     } else if (resp.data["looping"]) {
+  //       const lastRecord = records[records.length - 1];
+  //       lastRecord.loopedTimes += 1;
+  //       lastRecord.elapsedTime =
+  //         new Date().getTime() - lastRecord.startedAt.getTime();
+  //       setLoopRecords([...recordsRef.current]);
+  //     }
+  //   };
 
-    // add a listener to CHANNEL channel
-    global.ipcRenderer.addListener(channelName, handleMessage);
+  //   // add a listener to CHANNEL channel
+  //   global.ipcRenderer.addListener(channelName, handleMessage);
 
-    return () => {
-      global.ipcRenderer.removeListener(channelName, handleMessage);
-    };
-  }, []);
+  //   return () => {
+  //     global.ipcRenderer.removeListener(channelName, handleMessage);
+  //   };
+  // }, []);
 
   const missions = [
     { value: "current", label: "当前关卡" },

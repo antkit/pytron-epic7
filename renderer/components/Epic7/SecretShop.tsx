@@ -104,76 +104,74 @@ interface SecretShopProps {}
 export const SecretShop = (props: SecretShopProps) => {
   const [loopTimes, setLoopTimes] = useState(10);
   const [running, setRunning] = useState(false);
-  const runningRef = useRef<boolean>(false);
   const [remainDiamonds, setRemainDiamonds] = useState(0);
   const [remainGolds, setRemainGolds] = useState(0);
   const [buyList, setBuyList] = useState(["covenant_bookmark", "mystic_medal"]);
   const [breakList, setBreakList] = useState(["equip_epic_lv85"]);
   const [loopRecords, setLoopRecords] = useState<LoopRecord[]>([]);
-  const recordsRef = useRef<LoopRecord[]>([]);
 
+  const handleMessage = (_event, resp: Response) => {
+    console.log("handleMessage secretshop", "running:", running, resp);
+    if (!running) {
+      return;
+    }
+
+    console.log(resp.result, resp.data);
+    const records = loopRecords;
+
+    if (resp.result === "done") {
+      const lastRecord = records[records.length - 1];
+      lastRecord.elapsedTime =
+        new Date().getTime() - lastRecord.startedAt.getTime();
+      setLoopRecords([...records]);
+      setRunning(false);
+    } else if (resp.data["bought"]) {
+      const goods = resp.data["bought"];
+      const lastRecord = records[records.length - 1];
+      let exists = false;
+      for (let i = 0; i < lastRecord.boughtGoods.length; i++) {
+        if (lastRecord.boughtGoods[i].goods === goods) {
+          lastRecord.boughtGoods[i].count += 1;
+          exists = true;
+          break;
+        }
+      }
+      if (!exists) {
+        lastRecord.boughtGoods.push({ goods, count: 1 });
+      }
+
+      switch (resp.data["bought"]) {
+        case "covenant_bookmark":
+          console.log("购买 圣约书签");
+          break;
+        case "mystic_medal":
+          console.log("购买 神秘奖牌");
+          break;
+      }
+    } else if (resp.data["looping"]) {
+      const lastRecord = records[records.length - 1];
+      lastRecord.loopedTimes += 1;
+      lastRecord.elapsedTime =
+        new Date().getTime() - lastRecord.startedAt.getTime();
+      setLoopRecords([...records]);
+    }
+  };
+
+  // See https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues/2895
   useEffect(() => {
-    const handleMessage = (_event, resp: Response) => {
-      if (!running) {
-        return;
-      }
-
-      console.log(resp.result, resp.data);
-      const records = recordsRef.current;
-
-      if (resp.result === "done") {
-        const lastRecord = records[records.length - 1];
-        lastRecord.elapsedTime =
-          new Date().getTime() - lastRecord.startedAt.getTime();
-        setLoopRecords([...recordsRef.current]);
-        runningRef.current = false;
-        setRunning(runningRef.current);
-      } else if (resp.data["bought"]) {
-        const goods = resp.data["bought"];
-        const lastRecord = records[records.length - 1];
-        let exists = false;
-        for (let i = 0; i < lastRecord.boughtGoods.length; i++) {
-          if (lastRecord.boughtGoods[i].goods === goods) {
-            lastRecord.boughtGoods[i].count += 1;
-            exists = true;
-            break;
-          }
-        }
-        if (!exists) {
-          lastRecord.boughtGoods.push({ goods, count: 1 });
-        }
-
-        switch (resp.data["bought"]) {
-          case "covenant_bookmark":
-            console.log("购买 圣约书签");
-            break;
-          case "mystic_medal":
-            console.log("购买 神秘奖牌");
-            break;
-        }
-      } else if (resp.data["looping"]) {
-        const lastRecord = records[records.length - 1];
-        lastRecord.loopedTimes += 1;
-        lastRecord.elapsedTime =
-          new Date().getTime() - lastRecord.startedAt.getTime();
-        setLoopRecords([...recordsRef.current]);
-      }
-    };
-
     // add a listener to channel
     global.ipcRenderer.addListener(channelName, handleMessage);
 
     return () => {
       global.ipcRenderer.removeListener(channelName, handleMessage);
     };
-  }, []);
+  }, [running, loopRecords]);
 
   const handleStartLoop = () => {
     if (running) {
       return;
     }
-    runningRef.current = true;
-    setRunning(runningRef.current);
+    setRunning(true);
     const data = {
       times: loopTimes,
       buyList,
@@ -194,9 +192,7 @@ export const SecretShop = (props: SecretShopProps) => {
       boughtGoods: [],
       elapsedTime: 0,
     };
-    // setLoopHistories([...loopHistories, newRecord]);
-    recordsRef.current = [...recordsRef.current, newRecord];
-    setLoopRecords([...recordsRef.current]);
+    setLoopRecords([...loopRecords, newRecord]);
   };
 
   const formatElaspedTime = (t: number) => {

@@ -1,8 +1,20 @@
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import { Tabs } from "@mantine/core";
-import { EquipEvaluate, Gvg, Pvp, SecretShop, Venture } from "../components/Epic7";
-import { IconAxe, IconBorderAll, IconLetterG, IconLetterP, IconScale } from "@tabler/icons";
+import {
+  EquipEvaluate,
+  Gvg,
+  Pvp,
+  SecretShop,
+  Venture,
+} from "../components/Epic7";
+import {
+  IconAxe,
+  IconBorderAll,
+  IconLetterG,
+  IconLetterP,
+  IconScale,
+} from "@tabler/icons";
 
 enum Commands {
   DetectPython3 = "detectPython3", // 检测系统Python环境
@@ -19,7 +31,6 @@ enum Results {
   Success = "success",
   Failed = "failed",
 }
-const channelName = "pytron";
 
 const IndexPage = () => {
   useEffect(() => {
@@ -45,41 +56,55 @@ const IndexPage = () => {
         <Link href="/about">About</Link>
       </p> */}
       {/* <Container size="xs"> */}
-        <Tabs defaultValue="secretshop">
-          <Tabs.List>
-            <Tabs.Tab icon={<IconScale color="#7bc62d" size={20} />} value="secretshop">
-              秘密商店
-            </Tabs.Tab>
-            <Tabs.Tab icon={<IconBorderAll color="#7bc62d" size={20} />} value="venture">
-              讨伐冒险
-            </Tabs.Tab>
-            <Tabs.Tab icon={<IconAxe color="#7bc62d" size={20} />} value="equipstat">
-              装备评分
-            </Tabs.Tab>
-            <Tabs.Tab icon={<IconLetterG color="#7bc62d" size={20} />} value="gvg">
-              公会战
-            </Tabs.Tab>
-            <Tabs.Tab icon={<IconLetterP color="#7bc62d" size={20} />} value="pvp">
-              竞技场
-            </Tabs.Tab>
-          </Tabs.List>
-          <Tabs.Panel value="secretshop" p="xs">
-            <SecretShop />
-          </Tabs.Panel>
-          <Tabs.Panel value="venture" p="xs">
-            <Venture />
-          </Tabs.Panel>
-          <Tabs.Panel value="gvg" p="xs">
-            <Gvg />
-          </Tabs.Panel>
-          <Tabs.Panel value="pvp" p="xs">
-            <Pvp />
-          </Tabs.Panel>
-          <Tabs.Panel value="equipstat" p="xs">
-            {/* <EquipStat /> */}
-            <EquipEvaluate />
-          </Tabs.Panel>
-        </Tabs>
+      <Tabs defaultValue="secretshop">
+        <Tabs.List>
+          <Tabs.Tab
+            icon={<IconScale color="#7bc62d" size={20} />}
+            value="secretshop"
+          >
+            秘密商店
+          </Tabs.Tab>
+          <Tabs.Tab
+            icon={<IconBorderAll color="#7bc62d" size={20} />}
+            value="venture"
+          >
+            讨伐冒险
+          </Tabs.Tab>
+          <Tabs.Tab
+            icon={<IconAxe color="#7bc62d" size={20} />}
+            value="equipstat"
+          >
+            装备评分
+          </Tabs.Tab>
+          <Tabs.Tab
+            icon={<IconLetterG color="#7bc62d" size={20} />}
+            value="gvg"
+          >
+            公会战
+          </Tabs.Tab>
+          <Tabs.Tab
+            icon={<IconLetterP color="#7bc62d" size={20} />}
+            value="pvp"
+          >
+            竞技场
+          </Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Panel value="secretshop" p="xs">
+          <SecretShop />
+        </Tabs.Panel>
+        <Tabs.Panel value="venture" p="xs">
+          <Venture />
+        </Tabs.Panel>
+        <Tabs.Panel value="gvg" p="xs">
+          <Gvg />
+        </Tabs.Panel>
+        <Tabs.Panel value="pvp" p="xs">
+          <Pvp />
+        </Tabs.Panel>
+        <Tabs.Panel value="equipstat" p="xs">
+          <EquipEvaluate />
+        </Tabs.Panel>
+      </Tabs>
       {/* </Container> */}
 
       {/* <Container size="xl">

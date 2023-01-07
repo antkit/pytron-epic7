@@ -88,6 +88,7 @@ function reply(
     result,
     data: data ? data : {},
   };
+  console.log('reply to channel', channel, message)
   event.sender.send(channel, message);
 }
 
@@ -267,13 +268,12 @@ function doRun(cmd: Commands, event: IpcMainEvent, props: RunProps) {
   }
   const ps = global.runner;
   const messageCallback = (data: any) => {
-    console.log("message", data);
+    console.log("message:", data);
     try {
-      const j = JSON.parse(data);
-      if (typeof j !== "object") {
-        return;
+      const jd = JSON.parse(data);
+      if (typeof jd === "object") {
+        reply(event, channelName, cmd, Status.Info, jd);
       }
-      reply(event, channelName, Commands.RunPysh, Status.Info, j);
     } catch {
       // ignore unprocessable messages
     }
