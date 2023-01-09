@@ -19,7 +19,8 @@ enum Commands {
   WriteConfig = "writeConfig", // 写入配置文件
   Download = "download", // 下载资源、代码文件
   RunPysh = "runPysh", // python-shell执行venv下的python
-  RunBin = "runBin",
+  RunBin = "runBin", // 执行可执行程序
+  Stop = "stop", // 停止当前运行的脚本/程序
 }
 
 enum Status {
@@ -68,6 +69,9 @@ export function pytronHandler(
     case Commands.RunBin:
       runBin(event, data as RunProps);
       break;
+    case Commands.Stop:
+      stopCurrentRunner(event);
+      break;
     default:
       console.error("unsupported command", cmd);
       break;
@@ -88,7 +92,7 @@ function reply(
     result,
     data: data ? data : {},
   };
-  console.log('reply to channel', channel, message)
+  console.log("reply to channel", channel, message);
   event.sender.send(channel, message);
 }
 
@@ -378,4 +382,9 @@ function download(event: IpcMainEvent, props: DownloadProps) {
     file.close();
     reply(event, channelName, Commands.Download, Status.Error);
   });
+}
+
+function stopCurrentRunner(event: IpcMainEvent) {
+  reply(event, channelName, Commands.Stop, Status.Done);
+  killGlobalRunner();
 }

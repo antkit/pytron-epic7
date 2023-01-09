@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import {
   Avatar,
   Card,
@@ -12,20 +12,7 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import { IconRecycle } from "@tabler/icons";
-import { CHECKSUM_GAME } from "../../utils";
-
-const channelName = "pytron";
-
-enum Commands {
-  DetectPython3 = "detectPython3", // 检测系统Python环境
-  Init = "init", // 初始化pytron环境
-  Remove = "remove", // 移除pytron环境
-  ReadConfig = "readConfig", // 读取配置文件
-  WriteConfig = "writeConfig", // 写入配置文件
-  Download = "download", // 下载资源、代码文件
-  RunPysh = "runPysh", // python-shell运行python代码
-  RunBin = "runBin", // 运行可执行文件
-}
+import { CHECKSUM_GAME, PYTRON_CHANNEL, Commands } from "../../utils";
 
 const buyListData = [
   {
@@ -160,15 +147,16 @@ export const SecretShop = (props: SecretShopProps) => {
   // See https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues/2895
   useEffect(() => {
     // add a listener to channel
-    global.ipcRenderer.addListener(channelName, handleMessage);
+    global.ipcRenderer.addListener(PYTRON_CHANNEL, handleMessage);
 
     return () => {
-      global.ipcRenderer.removeListener(channelName, handleMessage);
+      global.ipcRenderer.removeListener(PYTRON_CHANNEL, handleMessage);
     };
   }, [running, loopRecords]);
 
   const handleStartLoop = () => {
     if (running) {
+      global.ipcRenderer.send(PYTRON_CHANNEL, Commands.Stop);
       return;
     }
     setRunning(true);
@@ -179,7 +167,7 @@ export const SecretShop = (props: SecretShopProps) => {
       remainDiamonds,
       remainGolds,
     };
-    global.ipcRenderer.send(channelName, Commands.RunPysh, {
+    global.ipcRenderer.send(PYTRON_CHANNEL, Commands.RunPysh, {
       filename: "game.py",
       checksum: CHECKSUM_GAME,
       args: ["secretshop", JSON.stringify(data)],
@@ -301,11 +289,16 @@ export const SecretShop = (props: SecretShopProps) => {
             >
               <Group position="center">
                 {running ? (
-                  <Loader size={18} />
+                  <>
+                    <Loader size={18} />
+                    <Text color="red">停止循环</Text>
+                  </>
                 ) : (
-                  <IconRecycle color="#0b0" size={18} />
+                  <>
+                    <IconRecycle color="#0b0" size={18} />
+                    <Text color="green">开始循环</Text>
+                  </>
                 )}
-                <Text color="green">开始循环</Text>
               </Group>
             </UnstyledButton>
             <Table fontSize="xs">

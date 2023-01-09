@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import {
   Avatar,
   Card,
@@ -13,26 +13,12 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import {
-  IconCheck,
   IconCircleCheck,
   IconCircleDashed,
   IconCircleX,
   IconRecycle,
 } from "@tabler/icons";
-import { CHECKSUM_GAME } from "../../utils";
-
-const channelName = "pytron";
-
-enum Commands {
-  DetectPython3 = "detectPython3", // 检测系统Python环境
-  Init = "init", // 初始化pytron环境
-  Remove = "remove", // 移除pytron环境
-  ReadConfig = "readConfig", // 读取配置文件
-  WriteConfig = "writeConfig", // 写入配置文件
-  Download = "download", // 下载资源、代码文件
-  RunPysh = "runPysh", // python-shell运行python代码
-  RunBin = "runBin", // 运行可执行文件
-}
+import { CHECKSUM_GAME, Commands, PYTRON_CHANNEL } from "../../utils";
 
 const ventureData = [
   {
@@ -109,7 +95,7 @@ export const Venture = (props: VentureProps) => {
 
     if (resp.result === "done") {
       const lastRecord = records[records.length - 1];
-      if (!lastRecord.venture.status) {
+      if (lastRecord.venture.status === "running") {
         lastRecord.venture.status = "unknown";
       }
       lastRecord.elapsedTime =
@@ -136,10 +122,10 @@ export const Venture = (props: VentureProps) => {
 
   useEffect(() => {
     // add a listener to CHANNEL channel
-    global.ipcRenderer.addListener(channelName, handleMessage);
+    global.ipcRenderer.addListener(PYTRON_CHANNEL, handleMessage);
 
     return () => {
-      global.ipcRenderer.removeListener(channelName, handleMessage);
+      global.ipcRenderer.removeListener(PYTRON_CHANNEL, handleMessage);
     };
   }, [running, loopRecords]);
 
@@ -151,6 +137,7 @@ export const Venture = (props: VentureProps) => {
 
   const handleStartLoop = () => {
     if (running) {
+      global.ipcRenderer.send(PYTRON_CHANNEL, Commands.Stop);
       return;
     }
     setRunning(true);
@@ -162,7 +149,7 @@ export const Venture = (props: VentureProps) => {
       useLeif: true,
       useDiamond: false,
     };
-    global.ipcRenderer.send(channelName, Commands.RunPysh, {
+    global.ipcRenderer.send(PYTRON_CHANNEL, Commands.RunPysh, {
       filename: "game.py",
       checksum: CHECKSUM_GAME,
       args: ["venture", JSON.stringify(data)],
@@ -196,14 +183,14 @@ export const Venture = (props: VentureProps) => {
   const recordRows = loopRecords.map((e: LoopRecord, index: number) => (
     <tr key={index}>
       <td>
+        {e.loopedTimes + 1}/{e.loopTimes}
+      </td>
+      <td>
         {e.startedAt.toLocaleString("zh-CN", {
           dateStyle: "short",
           timeStyle: "short",
           hour12: false,
         })}
-      </td>
-      <td>
-        {e.loopedTimes}/{e.loopTimes}
       </td>
       <td>{formatElaspedTime(e.elapsedTime)}</td>
       <td>{fomratVentureResult(e.venture.status)}</td>
@@ -251,11 +238,16 @@ export const Venture = (props: VentureProps) => {
             >
               <Group position="center">
                 {running ? (
-                  <Loader size={18} />
+                  <>
+                    <Loader size={18} />
+                    <Text color="red">停止循环</Text>
+                  </>
                 ) : (
-                  <IconRecycle color="#0b0" size={18} />
+                  <>
+                    <IconRecycle color="#0b0" size={18} />
+                    <Text color="green">开始循环</Text>
+                  </>
                 )}
-                <Text color="green">开始循环</Text>
               </Group>
             </UnstyledButton>
             <Table fontSize="xs">
