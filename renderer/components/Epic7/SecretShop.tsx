@@ -12,7 +12,7 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import { IconRecycle } from "@tabler/icons";
-import { CHECKSUM_GAME, PYTRON_CHANNEL, Commands } from "../../utils";
+import { CHECKSUM_GAME, PYTRON_CHANNEL, Commands, GAME_SCRIPT } from "../../utils";
 
 const buyListData = [
   {
@@ -168,7 +168,7 @@ export const SecretShop = (props: SecretShopProps) => {
       remainGolds,
     };
     global.ipcRenderer.send(PYTRON_CHANNEL, Commands.RunPysh, {
-      filename: "game.py",
+      filename: GAME_SCRIPT,
       checksum: CHECKSUM_GAME,
       args: ["secretshop", JSON.stringify(data)],
     });

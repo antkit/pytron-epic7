@@ -18,7 +18,7 @@ import {
   IconCircleX,
   IconRecycle,
 } from "@tabler/icons";
-import { CHECKSUM_GAME, Commands, PYTRON_CHANNEL } from "../../utils";
+import { CHECKSUM_GAME, Commands, GAME_SCRIPT, PYTRON_CHANNEL } from "../../utils";
 
 const ventureData = [
   {
@@ -150,7 +150,7 @@ export const Venture = (props: VentureProps) => {
       useDiamond: false,
     };
     global.ipcRenderer.send(PYTRON_CHANNEL, Commands.RunPysh, {
-      filename: "game.py",
+      filename: GAME_SCRIPT,
       checksum: CHECKSUM_GAME,
       args: ["venture", JSON.stringify(data)],
     });

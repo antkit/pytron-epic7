@@ -1,3 +1,4 @@
+export const GAME_SCRIPT = "game.py";
 export const CHECKSUM_GAME =
   "9558255a017915cccbdcb17e4b785c9bf68a8f5203ce8f4d69de073ae0f58091";
 

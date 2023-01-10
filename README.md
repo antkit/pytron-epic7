@@ -28,6 +28,7 @@ https://epic7x.com/materials/
 
 # TO-DO
 
+* Fix secretshop goods recognition problem when app in small size mode
 * Check update when starting
 * Check authority
 * Fetch ocr texts from api server
