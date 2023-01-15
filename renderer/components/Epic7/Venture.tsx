@@ -18,7 +18,12 @@ import {
   IconCircleX,
   IconRecycle,
 } from "@tabler/icons";
-import { CHECKSUM_GAME, Commands, GAME_SCRIPT, PYTRON_CHANNEL } from "../../utils";
+import {
+  CHECKSUM_GAME,
+  Commands,
+  GAME_SCRIPT,
+  PYTRON_CHANNEL,
+} from "../../utils";
 
 const ventureData = [
   {
@@ -80,6 +85,7 @@ interface VentureProps {}
 
 export const Venture = (props: VentureProps) => {
   const [running, setRunning] = useState(false);
+  const [stage, setStage] = useState("current");
   const [ventureOptions, setVentureOptions] = useState(["leif"]);
   const [loopTimes, setLoopTimes] = useState(10);
   const [loopRecords, setLoopRecords] = useState<LoopRecord[]>([]);
@@ -131,8 +137,9 @@ export const Venture = (props: VentureProps) => {
 
   const missions = [
     { value: "current", label: "当前关卡" },
-    { value: "ep1-9-4", label: "第一章 9-4" },
-    { value: "ep1-9-7", label: "第一章 9-7" },
+    { value: "1 9-2 9-7", label: "第一章 9-7" },
+    { value: "4 1 1-5", label: "第四章 1-5" },
+    { value: "4 10 10-7", label: "第四章 10-7" },
   ];
 
   const handleStartLoop = () => {
@@ -141,14 +148,16 @@ export const Venture = (props: VentureProps) => {
       return;
     }
     setRunning(true);
+    const stageItems = stage.split(" ");
     const data = {
       times: loopTimes,
-      episode: 0,
-      chapter: 0,
-      mission: 0,
+      episode: stage === "current" ? 0 : +stageItems[0],
+      chapter: stage === "current" ? 0 : stageItems[1],
+      mission: stage === "current" ? 0 : stageItems[2],
       useLeif: true,
       useDiamond: false,
     };
+    console.log(data);
     global.ipcRenderer.send(PYTRON_CHANNEL, Commands.RunPysh, {
       filename: GAME_SCRIPT,
       checksum: CHECKSUM_GAME,
@@ -205,7 +214,8 @@ export const Venture = (props: VentureProps) => {
             <Stack sx={{ width: 600 }}>
               <Select
                 label="选择关卡:"
-                defaultValue="current"
+                value={stage}
+                onChange={setStage}
                 data={missions}
               />
               <MultiSelect
