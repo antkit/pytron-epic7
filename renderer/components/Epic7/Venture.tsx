@@ -3,9 +3,11 @@ import {
   Avatar,
   Card,
   Group,
+  List,
   Loader,
   MultiSelect,
   NumberInput,
+  ScrollArea,
   Select,
   Stack,
   Table,
@@ -100,7 +102,7 @@ export const Venture = (props: VentureProps) => {
     const records = loopRecords;
 
     if (resp.result === "done") {
-      const lastRecord = records[records.length - 1];
+      const lastRecord = records[0]; //records.length - 1];
       if (lastRecord.venture.status === "running") {
         lastRecord.venture.status = "unknown";
       }
@@ -109,7 +111,7 @@ export const Venture = (props: VentureProps) => {
       setLoopRecords([...records]);
       setRunning(false);
     } else if (resp.data["result"]) {
-      const lastRecord = records[records.length - 1];
+      const lastRecord = records[0]; //records.length - 1];
       lastRecord.venture.status = resp.data["result"];
       lastRecord.elapsedTime =
         new Date().getTime() - lastRecord.startedAt.getTime();
@@ -118,11 +120,11 @@ export const Venture = (props: VentureProps) => {
       const newRecord: LoopRecord = {
         startedAt: new Date(),
         loopTimes: loopTimes,
-        loopedTimes: 0,
+        loopedTimes: +resp.data["looping"],
         venture: { status: "running" },
         elapsedTime: 0,
       };
-      setLoopRecords([...records, newRecord]);
+      setLoopRecords([newRecord, ...records]); // 倒叙
     }
   };
 
@@ -136,10 +138,11 @@ export const Venture = (props: VentureProps) => {
   }, [running, loopRecords]);
 
   const missions = [
-    { value: "current", label: "当前关卡" },
-    { value: "1 9-2 9-7", label: "第一章 9-7" },
-    { value: "4 1 1-5", label: "第四章 1-5" },
-    { value: "4 10 10-7", label: "第四章 10-7" },
+    { value: "Current", label: "当前关卡" },
+    { value: "EP1 2S 3-1", label: "第一章 3-1" },
+    { value: "EP1 9-2 9-7", label: "第一章 9-7" },
+    // { value: "EP4 1 1-5",   label: "第四章 1-5" },
+    { value: "EP4 10 10-7", label: "第四章 10-7" },
   ];
 
   const handleStartLoop = () => {
@@ -192,7 +195,7 @@ export const Venture = (props: VentureProps) => {
   const recordRows = loopRecords.map((e: LoopRecord, index: number) => (
     <tr key={index}>
       <td>
-        {e.loopedTimes + 1}/{e.loopTimes}
+        {e.loopedTimes}/{e.loopTimes}
       </td>
       <td>
         {e.startedAt.toLocaleString("zh-CN", {
@@ -235,6 +238,13 @@ export const Venture = (props: VentureProps) => {
                 value={loopTimes}
                 onChange={setLoopTimes}
               />
+              <Text pb={0} mb={-13} sx={{fontSize: 14, fontWeight: 700}}>如何选择关卡：</Text>
+              <List pl={10} sx={{fontSize: 12}}>
+                <List.Item>当前关卡，要求非迷宫地图，适合讨伐、支线活动等</List.Item>
+                <List.Item>第一章 3-1，2体3战，主刷好感度，伴有狗粮产出</List.Item>
+                <List.Item>第一章 9-7，10体11战2箱子，主刷狗粮，伴有强化石、催化剂、低级装备</List.Item>
+                <List.Item>第四章 10-7，10体9战1箱子，企鹅、红叶、狗粮等综合性价比高；战斗耗时长，难度高</List.Item>
+              </List>
             </Stack>
           </Group>
         </Card>
@@ -260,17 +270,19 @@ export const Venture = (props: VentureProps) => {
                 )}
               </Group>
             </UnstyledButton>
-            <Table fontSize="xs">
-              <thead style={{ fontSize: 13, fontWeight: 500 }}>
-                <tr>
-                  <td>战斗序号</td>
-                  <td>开始时间</td>
-                  <td>战斗耗时</td>
-                  <td>战斗结果</td>
-                </tr>
-              </thead>
-              <tbody>{recordRows}</tbody>
-            </Table>
+            <ScrollArea sx={{ height: 400 }}>
+              <Table fontSize="xs">
+                <thead style={{ fontSize: 13, fontWeight: 500 }}>
+                  <tr>
+                    <td>战斗序号</td>
+                    <td>开始时间</td>
+                    <td>战斗耗时</td>
+                    <td>战斗结果</td>
+                  </tr>
+                </thead>
+                <tbody>{recordRows}</tbody>
+              </Table>
+            </ScrollArea>
           </Stack>
         </Card>
       </Group>
