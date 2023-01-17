@@ -11,7 +11,7 @@ import {
   Text,
   UnstyledButton,
 } from "@mantine/core";
-import { IconRecycle } from "@tabler/icons";
+import { IconPlayerPlay } from "@tabler/icons";
 import { CHECKSUM_GAME, PYTRON_CHANNEL, Commands, GAME_SCRIPT } from "../../utils";
 
 const buyListData = [
@@ -295,7 +295,7 @@ export const SecretShop = (props: SecretShopProps) => {
                   </>
                 ) : (
                   <>
-                    <IconRecycle color="#0b0" size={18} />
+                    <IconPlayerPlay color="#0b0" size={18} />
                     <Text color="green">开始循环</Text>
                   </>
                 )}

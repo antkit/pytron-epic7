@@ -18,7 +18,7 @@ import {
   IconCircleCheck,
   IconCircleDashed,
   IconCircleX,
-  IconRecycle,
+  IconPlayerPlay,
 } from "@tabler/icons";
 import {
   CHECKSUM_GAME,
@@ -87,7 +87,7 @@ interface VentureProps {}
 
 export const Venture = (props: VentureProps) => {
   const [running, setRunning] = useState(false);
-  const [stage, setStage] = useState("current");
+  const [stage, setStage] = useState("Current");
   const [ventureOptions, setVentureOptions] = useState(["leif"]);
   const [loopTimes, setLoopTimes] = useState(10);
   const [loopRecords, setLoopRecords] = useState<LoopRecord[]>([]);
@@ -154,9 +154,9 @@ export const Venture = (props: VentureProps) => {
     const stageItems = stage.split(" ");
     const data = {
       times: loopTimes,
-      episode: stage === "current" ? 0 : +stageItems[0],
-      chapter: stage === "current" ? 0 : stageItems[1],
-      mission: stage === "current" ? 0 : stageItems[2],
+      episode: stage === "Current" ? 0 : +stageItems[0],
+      chapter: stage === "Current" ? 0 : stageItems[1],
+      mission: stage === "Current" ? 0 : stageItems[2],
       useLeif: true,
       useDiamond: false,
     };
@@ -242,8 +242,8 @@ export const Venture = (props: VentureProps) => {
               <List pl={10} sx={{fontSize: 12}}>
                 <List.Item>当前关卡，要求非迷宫地图，适合讨伐、支线活动等</List.Item>
                 <List.Item>第一章 3-1，2体3战，主刷好感度，伴有狗粮产出</List.Item>
-                <List.Item>第一章 9-7，10体11战2箱子，主刷狗粮，伴有强化石、催化剂、低级装备</List.Item>
-                <List.Item>第四章 10-7，10体9战1箱子，企鹅、红叶、狗粮等综合性价比高；战斗耗时长，难度高</List.Item>
+                <List.Item>第一章 9-7，10体11战2箱子，主刷狗粮，伴有强化石、低级装备</List.Item>
+                <List.Item>第四章 10-7，10体8战1箱子，企鹅、红叶、狗粮等综合性价比高；难度高，战斗耗时长</List.Item>
               </List>
             </Stack>
           </Group>
@@ -264,7 +264,7 @@ export const Venture = (props: VentureProps) => {
                   </>
                 ) : (
                   <>
-                    <IconRecycle color="#0b0" size={18} />
+                    <IconPlayerPlay color="#0b0" size={18} />
                     <Text color="green">开始循环</Text>
                   </>
                 )}

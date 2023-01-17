@@ -1,4 +1,11 @@
-import { Group, Image, NumberInput, Slider, Tooltip } from '@mantine/core';
+import {
+  ActionIcon,
+  Group,
+  Image,
+  NumberInput,
+  Slider,
+  Tooltip,
+} from "@mantine/core";
 
 type EquipAttributeProps = {
   tooltip: string;
@@ -26,7 +33,14 @@ export function EquipAttribute({
   return (
     <Group noWrap position="center" spacing="md">
       <Tooltip label={tooltip}>
-        <Image src={image} alt={alt} width={30} onClick={() => setValue(min)} />
+        <ActionIcon>
+          <Image
+            src={image}
+            alt={alt}
+            width={30}
+            onClick={() => setValue(min)}
+          />
+        </ActionIcon>
       </Tooltip>
       <Slider
         marks={[
@@ -38,7 +52,7 @@ export function EquipAttribute({
         size="xs"
         min={min}
         max={max}
-        sx={{ width: '100%' }}
+        sx={{ width: "100%" }}
         onChange={(val) => setValue(val)}
       />
       <NumberInput
