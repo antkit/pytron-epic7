@@ -1,6 +1,6 @@
 export const GAME_SCRIPT = "game.py";
 export const CHECKSUM_GAME =
-  "f99fd129a66980e92d151adc8e9cfd800d73480c4fd7e25fd6c363c18b3452bd";
+  "e0fc52c90fcd60a949626b623a1263c8ae6cab0934bfc9293ad7a66c33f06ee6";
 
 export const PYTRON_CHANNEL = "pytron";
 

@@ -11,10 +11,12 @@ import {
 import {
   IconAxe,
   IconBorderAll,
+  IconLetterD,
   IconLetterG,
   IconLetterP,
   IconScale,
 } from "@tabler/icons";
+import Developer from "../components/Developer";
 
 enum Commands {
   DetectPython3 = "detectPython3", // 检测系统Python环境
@@ -49,7 +51,7 @@ const IndexPage = () => {
   // };
 
   return (
-    <Layout title="第七史诗助手">
+    <Layout title="拉斯助手">
       {/* <h1>Hello Next.js 👋</h1>
       <button onClick={onSayHiClick}>Say hi to electron</button>
       <p>
@@ -88,6 +90,12 @@ const IndexPage = () => {
           >
             竞技场
           </Tabs.Tab>
+          <Tabs.Tab
+            icon={<IconLetterD color="#7bc62d" size={20} />}
+            value="developer"
+          >
+            开发者
+          </Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="secretshop" p="xs">
           <SecretShop />
@@ -103,6 +111,9 @@ const IndexPage = () => {
         </Tabs.Panel>
         <Tabs.Panel value="equipstat" p="xs">
           <EquipEvaluate />
+        </Tabs.Panel>
+        <Tabs.Panel value="developer" p="xs">
+          <Developer />
         </Tabs.Panel>
       </Tabs>
       {/* </Container> */}
