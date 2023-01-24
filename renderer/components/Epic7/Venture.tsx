@@ -103,11 +103,13 @@ export const Venture = (props: VentureProps) => {
 
     if (resp.result === "done") {
       const lastRecord = records[0]; //records.length - 1];
-      if (lastRecord.venture.status === "running") {
-        lastRecord.venture.status = "unknown";
+      if (lastRecord) {
+        if (lastRecord.venture.status === "running") {
+          lastRecord.venture.status = "unknown";
+        }
+        lastRecord.elapsedTime =
+          new Date().getTime() - lastRecord.startedAt.getTime();
       }
-      lastRecord.elapsedTime =
-        new Date().getTime() - lastRecord.startedAt.getTime();
       setLoopRecords([...records]);
       setRunning(false);
     } else if (resp.data["result"]) {
@@ -152,9 +154,10 @@ export const Venture = (props: VentureProps) => {
     }
     setRunning(true);
     const stageItems = stage.split(" ");
+    console.log('stage:', stage, ', items:', stageItems);
     const data = {
       times: loopTimes,
-      episode: stage === "Current" ? 0 : +stageItems[0],
+      episode: stage === "Current" ? 0 : stageItems[0],
       chapter: stage === "Current" ? 0 : stageItems[1],
       mission: stage === "Current" ? 0 : stageItems[2],
       useLeif: true,

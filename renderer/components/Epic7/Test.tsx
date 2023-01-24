@@ -53,7 +53,7 @@ export const Test = () => {
   const handleInit = () => {
     global.ipcRenderer.send(channelName, Commands.Init, {
       version: "0.1.0",
-      packages: ["easyocr", "PyAutoGUI==0.9.53", "trio"],
+      packages: ["easyocr", "PyAutoGUI==0.9.53"], //, "trio"],
     });
   };
 
